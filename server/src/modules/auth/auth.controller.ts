@@ -12,7 +12,8 @@ export class AuthController {
 
       req.login(user as Express.User, (error) => {
         if (error) {
-          return next(error);
+          next(error);
+          return;
         }
 
         res.status(StatusCodes.CREATED).json({
@@ -30,7 +31,8 @@ export class AuthController {
 
       req.login(user as Express.User, (error) => {
         if (error) {
-          return next(error);
+          next(error);
+          return;
         }
 
         res.status(StatusCodes.OK).json({
@@ -45,12 +47,14 @@ export class AuthController {
   logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     req.logout((error) => {
       if (error) {
-        return next(error);
+        next(error);
+        return;
       }
 
       req.session.destroy((sessionError) => {
         if (sessionError) {
-          return next(sessionError);
+          next(sessionError);
+          return;
         }
 
         res.clearCookie('cvms.sid');

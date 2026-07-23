@@ -404,6 +404,132 @@ a {
     color: #ffffff;
   }
 
+.hero-block {
+  margin-bottom: 24px;
+}
+
+  .hero-block h1 {
+    margin: 0 0 8px;
+  }
+
+  .hero-block p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+.position-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.position-highlights__empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.position-highlight-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-2);
+}
+
+.position-highlight-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.position-highlight-card__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.position-highlight-card__title-link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+  .position-highlight-card__title-link:hover {
+    color: var(--primary);
+  }
+
+.position-highlight-card__company {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.position-highlight-card__description {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.position-highlight-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin: 0;
+}
+
+.position-highlight-card__meta-item {
+  min-width: 0;
+}
+
+  .position-highlight-card__meta-item dt {
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .position-highlight-card__meta-item dd {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+.position-visibility-badge {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.position-visibility-badge--public {
+  background: rgba(37, 99, 235, 0.14);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.position-visibility-badge--restricted {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text);
+}
+
+:root[data-theme='light'] .position-visibility-badge--public {
+  color: #1d4ed8;
+}
+
+@media (max-width: 640px) {
+  .position-highlight-card__top {
+    flex-direction: column;
+  }
+
+  .position-highlight-card__meta {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .sidebar {
     width: 100%;
@@ -448,3 +574,4 @@ a {
     padding: 16px;
   }
 }
+

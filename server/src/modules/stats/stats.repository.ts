@@ -65,7 +65,7 @@ export class StatsRepository {
     });
   }
 
-  async getMostPopularPositions(limit = 5) {
+  async getMostPopularPositions(limit = 10) {
     return prisma.position.findMany({
       take: limit,
       include: {
@@ -76,11 +76,7 @@ export class StatsRepository {
           }
         }
       },
-      orderBy: {
-        cvs: {
-          _count: 'desc'
-        }
-      }
+      orderBy: [{ cvs: { _count: 'desc' } }, { updatedAt: 'desc' }]
     });
   }
 
@@ -91,7 +87,7 @@ export class StatsRepository {
       }
     });
 
-    const counts = new Map<string, { id: string; name: string; count: number }>();
+    const counts = new Map();
 
     for (const row of tags) {
       const existing = counts.get(row.tagId);
@@ -117,7 +113,7 @@ export class StatsRepository {
       }
     });
 
-    const counts = new Map<string, { id: string; name: string; count: number }>();
+    const counts = new Map();
 
     for (const row of tags) {
       const existing = counts.get(row.tagId);

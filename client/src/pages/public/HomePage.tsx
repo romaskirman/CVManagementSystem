@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { statsApi } from '../../shared/api/stats.api';
 import * as React from 'react';
+import { PositionHighlightsList } from '../../features/positions/components/PositionHighlightsList';
 
 export function HomePage() {
   const { data: stats } = useQuery({
@@ -38,15 +39,17 @@ export function HomePage() {
         <div className="stat-card">Published CVs: {stats?.totalSubmittedCvs ?? 0}</div>
       </div>
 
-      <section className="card-block">
-        <h2>Latest positions</h2>
-        <pre>{JSON.stringify(latestPositions ?? [], null, 2)}</pre>
-      </section>
+      <PositionHighlightsList
+        title="Latest positions"
+        positions={latestPositions ?? []}
+        mode="latest"
+      />
 
-      <section className="card-block">
-        <h2>Most popular positions</h2>
-        <pre>{JSON.stringify(popularPositions ?? [], null, 2)}</pre>
-      </section>
+      <PositionHighlightsList
+        title="Most popular positions"
+        positions={popularPositions ?? []}
+        mode="popular"
+      />
 
       <section className="card-block">
         <h2>Tag cloud</h2>

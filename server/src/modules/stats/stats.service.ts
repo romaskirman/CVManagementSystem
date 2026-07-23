@@ -19,6 +19,7 @@ export class StatsService {
       visibilityMode: position.visibilityMode,
       company: position.company,
       level: position.level,
+      maxProjects: position.maxProjects,
       submittedCvCount: position.cvs.length,
       updatedAt: position.updatedAt
     }));
@@ -31,11 +32,12 @@ export class StatsService {
       id: position.id,
       title: position.title,
       shortDescription: position.shortDescription,
+      visibilityMode: position.visibilityMode,
+      company: position.company,
+      level: position.level,
+      maxProjects: position.maxProjects,
       submittedCvCount: position.cvs.length,
-      tags: position.projectTags.map((item) => ({
-        id: item.tag.id,
-        name: item.tag.name
-      }))
+      updatedAt: position.updatedAt
     }));
   }
 

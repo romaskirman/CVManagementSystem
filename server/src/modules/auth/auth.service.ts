@@ -40,29 +40,54 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<SessionUserDto> {
-    const user = await this.authRepository.findUserByEmail(input.email);
+    const existingUser = await this.authRepository.findUserByEmail(input.email);
 
-    console.log(user);
+    if (!existingUser) {
+      const passwordHash = await PasswordService.hash(input.password);
 
-    if (!user || !user.passwordHash) {
+      try {
+        const createdUser = await this.authRepository.createUserWithDefaults({
+          email: input.email,
+          passwordHash
+        });
+
+        return {
+          id: createdUser.id,
+          email: createdUser.email,
+          isBlocked: createdUser.isBlocked,
+          roles: createdUser.roles.map((item) => item.role.code)
+        };
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          mapPrismaError(error);
+        }
+
+        throw error;
+      }
+    }
+
+    if (!existingUser.passwordHash) {
       throw new AuthError('Invalid email or password');
     }
 
-    const isValidPassword = await PasswordService.compare(input.password, user.passwordHash);
+    const isValidPassword = await PasswordService.compare(
+      input.password,
+      existingUser.passwordHash
+    );
 
     if (!isValidPassword) {
       throw new AuthError('Invalid email or password');
     }
 
-    if (user.isBlocked) {
+    if (existingUser.isBlocked) {
       throw new AuthError('User is blocked');
     }
 
     return {
-      id: user.id,
-      email: user.email,
-      isBlocked: user.isBlocked,
-      roles: user.roles.map((item) => item.role.code)
+      id: existingUser.id,
+      email: existingUser.email,
+      isBlocked: existingUser.isBlocked,
+      roles: existingUser.roles.map((item) => item.role.code)
     };
   }
 
