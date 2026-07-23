@@ -10,7 +10,7 @@ export class AuthController {
     try {
       const user = await this.authService.register(req.body);
 
-      req.login(user, (error) => {
+      req.login(user as Express.User, (error) => {
         if (error) {
           return next(error);
         }
@@ -28,7 +28,7 @@ export class AuthController {
     try {
       const user = await this.authService.login(req.body);
 
-      req.login(user, (error) => {
+      req.login(user as Express.User, (error) => {
         if (error) {
           return next(error);
         }
