@@ -1,0 +1,24 @@
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --panel-2: #1f2937;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --border: #334155;
+  --primary: #3b82f6;
+}
+
+  :root[data-theme='light'] {
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --panel-2: #e2e8f0;
+    --text: #0f172a;
+    --muted: #475569;
+    --border: #cbd5e1;
+    --primary: #2563eb;
+  }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}

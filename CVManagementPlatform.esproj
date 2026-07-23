@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.5.271090-alpha">
+  <ItemGroup>
+    <Folder Include="client\src\features\profile\hooks\" />
+    <Folder Include="client\src\features\positions\hooks\" />
+    <Folder Include="client\src\i18n\" />
+    <Folder Include="client\src\shared\api\" />
+    <Folder Include="server\src\common\errors\" />
+    <Folder Include="server\src\common\constants\" />
+    <Folder Include="server\src\common\types\" />
+    <Folder Include="server\src\config\" />
+    <Folder Include="server\src\middlewares\" />
+    <Folder Include="server\src\modules\auth\" />
+    <Folder Include="server\src\modules\attributes\" />
+    <Folder Include="server\src\modules\cv\" />
+    <Folder Include="server\src\modules\discussions\" />
+    <Folder Include="server\src\modules\likes\" />
+    <Folder Include="server\src\modules\admin\" />
+    <Folder Include="server\src\modules\search\" />
+    <Folder Include="server\src\modules\stats\" />
+    <Folder Include="server\src\modules\positions\" />
+    <Folder Include="server\src\modules\profile\" />
+    <Folder Include="server\src\modules\preferences\" />
+    <Folder Include="server\src\utils\" />
+    <Folder Include="server\src\types\" />
+  </ItemGroup>
+</Project>
