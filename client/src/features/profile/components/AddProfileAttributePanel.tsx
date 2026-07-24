@@ -44,30 +44,45 @@ export function AddProfileAttributePanel({
   };
 
   return (
-    <div className="card-block">
-      <h3>Add attribute</h3>
+    <div className="card-block add-attribute-panel">
+      <div className="add-attribute-panel__header">
+        <h3>Add attribute</h3>
+        <p>Find an attribute by prefix and add it to your profile.</p>
+      </div>
 
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Lookup by prefix..."
-      />
+      <div className="add-attribute-panel__search">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Lookup by prefix..."
+          aria-label="Lookup attribute by prefix"
+        />
+      </div>
 
-      <div className="stack-list">
-        {filtered.slice(0, 10).map((attribute) => (
-          <div key={attribute.id} className="list-row">
-            <div>
-              <div>{attribute.name}</div>
-              <div>
-                {attribute.category} · {attribute.type}
+      <div className="add-attribute-panel__list">
+        {filtered.slice(0, 10).length === 0 ? (
+          <div className="add-attribute-panel__empty">No matching attributes found.</div>
+        ) : (
+          filtered.slice(0, 10).map((attribute) => (
+            <div key={attribute.id} className="add-attribute-row">
+              <div className="add-attribute-row__content">
+                <div className="add-attribute-row__name">{attribute.name}</div>
+                <div className="add-attribute-row__meta">
+                  <span>{attribute.category}</span>
+                  <span>{attribute.type}</span>
+                </div>
               </div>
-            </div>
 
-            <button type="button" onClick={() => void handleAdd(attribute.id)}>
-              Add
-            </button>
-          </div>
-        ))}
+              <button
+                type="button"
+                className="btn-secondary add-attribute-row__button"
+                onClick={() => void handleAdd(attribute.id)}
+              >
+                Add
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

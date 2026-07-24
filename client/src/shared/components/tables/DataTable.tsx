@@ -19,25 +19,30 @@ export function DataTable<T>({ columns, rows, emptyText = 'No data' }: DataTable
   }
 
   return (
-    <div className="table-responsive">
-      <table className="table table-striped align-middle">
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.key}>{column.title}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
+    <div className="data-table-shell">
+      <div className="table-responsive data-table-responsive">
+        <table className="table data-table">
+          <thead>
+            <tr>
               {columns.map((column) => (
-                <td key={column.key}>{column.render(row)}</td>
+                <th key={column.key} scope="col">
+                  {column.title}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={index}>
+                {columns.map((column) => (
+                  <td key={column.key}>{column.render(row)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

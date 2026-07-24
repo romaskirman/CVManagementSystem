@@ -287,8 +287,21 @@ export function MyProfilePage() {
     const value = profileState.me[key] ?? '';
 
     return (
-      <div style={{ position: 'relative' }}>
-        <label>{label}</label>
+      <div className="me-field-card">
+        <div className="me-field-card__header">
+          <label className="me-field-card__label">{label}</label>
+
+          {!isEditing && (
+            <button
+              type="button"
+              aria-label={`Edit ${label}`}
+              onClick={() => setEditingBuiltIn(key)}
+              className="me-field-card__edit"
+            >
+              <span aria-hidden="true">✎</span>
+            </button>
+          )}
+        </div>
 
         {isEditing ? (
           <input
@@ -298,33 +311,10 @@ export function MyProfilePage() {
               updateMe({ [key]: e.target.value } as Partial<ProfileDetails['me']>)
             }
             onBlur={() => setEditingBuiltIn(null)}
-            style={{ width: '100%', marginTop: '6px' }}
+            className="me-field-card__input"
           />
         ) : (
-          <>
-            <button
-              type="button"
-              aria-label={`Edit ${label}`}
-              onClick={() => setEditingBuiltIn(key)}
-              style={{
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                margin: 0,
-                lineHeight: 1,
-                cursor: 'pointer'
-              }}
-            >
-              <span aria-hidden="true">✎</span>
-            </button>
-
-            <div style={{ marginTop: '6px', paddingRight: '24px' }}>
-              {value || '—'}
-            </div>
-          </>
+          <div className="me-field-card__value">{value || '—'}</div>
         )}
       </div>
     );
@@ -337,7 +327,7 @@ export function MyProfilePage() {
         <p>Auto-save is enabled and runs every few seconds.</p>
       </div>
 
-      <div className="inline-actions">
+      <div className="inline-actions profile-status-row">
         <span>{isSaving ? 'Saving...' : isDirty ? 'Unsaved changes' : 'Saved'}</span>
         {lastSavedAt && <span>Last saved: {new Date(lastSavedAt).toLocaleTimeString()}</span>}
       </div>
@@ -351,7 +341,7 @@ export function MyProfilePage() {
       <section className="card-block form-section">
         <h2>Me</h2>
 
-        <div className="form-grid">
+        <div className="form-grid me-fields-grid">
           {renderBuiltInField('firstName', 'First name')}
           {renderBuiltInField('lastName', 'Last name')}
           {renderBuiltInField('location', 'Location')}

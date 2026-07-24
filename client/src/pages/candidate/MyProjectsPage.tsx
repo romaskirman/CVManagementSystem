@@ -15,17 +15,11 @@ export function MyProjectsPage() {
     queryFn: () => projectsApi.listMine()
   });
 
-  const { data: tagSuggestions } = useQuery({
-    queryKey: ['project-tag-suggestions'],
-    queryFn: () => projectsApi.suggestTags()
-  });
-
   const createMutation = useMutation({
     mutationFn: (payload: ProjectPayload) => projectsApi.create(payload),
     onSuccess: () => {
       setIsCreating(false);
       void queryClient.invalidateQueries({ queryKey: ['my-projects'] });
-      void queryClient.invalidateQueries({ queryKey: ['project-tag-suggestions'] });
     }
   });
 
@@ -35,7 +29,6 @@ export function MyProjectsPage() {
     onSuccess: () => {
       setEditingProject(null);
       void queryClient.invalidateQueries({ queryKey: ['my-projects'] });
-      void queryClient.invalidateQueries({ queryKey: ['project-tag-suggestions'] });
     }
   });
 
@@ -44,12 +37,11 @@ export function MyProjectsPage() {
     onSuccess: () => {
       setEditingProject(null);
       void queryClient.invalidateQueries({ queryKey: ['my-projects'] });
-      void queryClient.invalidateQueries({ queryKey: ['project-tag-suggestions'] });
     }
   });
 
   const projects: CandidateProject[] = useMemo(() => data?.items ?? [], [data]);
-  const suggestedTags: string[] = useMemo(() => tagSuggestions?.items ?? [], [tagSuggestions]);
+  const suggestedTags: string[] = [];
 
   if (isLoading) {
     return <div className="page-section">Loading projects...</div>;
@@ -112,20 +104,40 @@ export function MyProjectsPage() {
                   </>
                 ) : (
                   <>
-                    <div className="section-header-inline">
-                      <div>
+                    <div className="section-header-inline project-card__header">
+                      <div className="project-card__title-block">
                         <h2>{project.name}</h2>
-                        <p>
-                          {project.startDate ?? '—'} — {project.endDate ?? 'Present'}
-                        </p>
                       </div>
 
-                      <button onClick={() => setEditingProject(project)}>Edit</button>
+                      <button
+                        type="button"
+                        className="btn-secondary project-card__edit-button"
+                        onClick={() => setEditingProject(project)}
+                      >
+                        Edit
+                      </button>
                     </div>
 
-                    <div className="markdown-preview">{project.descriptionMarkdown}</div>
+                    <div className="project-card__dates">
+                      <div className="project-date-card">
+                        <div className="project-date-card__label">Start date</div>
+                        <div className="project-date-card__value">{project.startDate ?? '—'}</div>
+                      </div>
 
-                    <div className="tag-cloud">
+                      <div className="project-date-card">
+                        <div className="project-date-card__label">End date</div>
+                        <div className="project-date-card__value">{project.endDate ?? 'Present'}</div>
+                      </div>
+                    </div>
+
+                    <div className="project-description-card">
+                      <div className="project-description-card__label">Description</div>
+                      <div className="markdown-preview project-description-card__content">
+                        {project.descriptionMarkdown || '—'}
+                      </div>
+                    </div>
+
+                    <div className="tag-cloud project-card__tags">
                       {project.tags.map((tag) => (
                         <span key={tag.name} className="tag-pill">
                           {tag.name}
