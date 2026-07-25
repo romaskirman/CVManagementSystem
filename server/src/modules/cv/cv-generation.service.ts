@@ -45,7 +45,7 @@ export class CvGenerationService {
           ? {
               stringValue: value.stringValue,
               textValue: value.textValue,
-              numberValue: value.numberValue ? Number(value.numberValue) : null,
+              numberValue: value.numberValue === null ? null : Number(value.numberValue),
               booleanValue: value.booleanValue,
               dateValue: value.dateValue,
               periodStart: value.periodStart,
@@ -64,26 +64,65 @@ export class CvGenerationService {
       };
     });
 
-    const filteredProjects = cv.candidateProfile.projects
-      .filter((project) => {
-        if (projectTagNames.size === 0) {
-          return true;
-        }
+    const selectedCvProjects =
+      cv.selectedProjects?.map((selectedProject) => selectedProject.project).filter(Boolean) ?? [];
 
-        return project.tagLinks.some((tagLink) => projectTagNames.has(tagLink.tag.name.toLowerCase()));
-      })
-      .slice(0, cv.position.maxProjects)
-      .map((project) => ({
-        id: project.id,
-        name: project.name,
-        periodStart: project.periodStart,
-        periodEnd: project.periodEnd,
-        descriptionMarkdown: project.descriptionMarkdown,
-        tags: project.tagLinks.map((tagLink) => ({
-          id: tagLink.tag.id,
-          name: tagLink.tag.name
-        }))
-      }));
+    const filteredProjects =
+      selectedCvProjects.length > 0
+        ? selectedCvProjects
+            .slice(0, cv.position.maxProjects)
+            .map((project) => ({
+              id: project.id,
+              name: project.name,
+              periodStart: project.periodStart,
+              periodEnd: project.periodEnd,
+              descriptionMarkdown: project.descriptionMarkdown,
+              tags: project.tagLinks.map((tagLink) => ({
+                id: tagLink.tag.id,
+                name: tagLink.tag.name
+              }))
+            }))
+        : cv.candidateProfile.projects
+            .filter((project) => {
+              if (projectTagNames.size === 0) {
+                return true;
+              }
+
+              return project.tagLinks.some((tagLink) =>
+                projectTagNames.has(tagLink.tag.name.toLowerCase())
+              );
+            })
+            .slice(0, cv.position.maxProjects)
+            .map((project) => ({
+              id: project.id,
+              name: project.name,
+              periodStart: project.periodStart,
+              periodEnd: project.periodEnd,
+              descriptionMarkdown: project.descriptionMarkdown,
+              tags: project.tagLinks.map((tagLink) => ({
+                id: tagLink.tag.id,
+                name: tagLink.tag.name
+              }))
+            }));
+
+    const getBuiltInValue = (attributeName: string) => {
+      const attributeValue = cv.candidateProfile.attributeValues.find(
+        (item) => item.attribute.isBuiltIn && item.attribute.name === attributeName
+      );
+
+      if (!attributeValue) {
+        return null;
+      }
+
+      return attributeValue.stringValue?.trim() || attributeValue.imageUrl?.trim() || null;
+    };
+
+    const builtInFields = {
+      firstName: getBuiltInValue('First Name'),
+      lastName: getBuiltInValue('Last Name'),
+      location: getBuiltInValue('Location'),
+      photoUrl: getBuiltInValue('Personal Photo')
+    };
 
     return {
       id: cv.id,
@@ -95,6 +134,7 @@ export class CvGenerationService {
         userId: cv.candidateProfile.user.id,
         email: cv.candidateProfile.user.email
       },
+      builtInFields,
       position: {
         id: cv.position.id,
         title: cv.position.title,

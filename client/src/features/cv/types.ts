@@ -1,9 +1,16 @@
 export type CvStatus = 'DRAFT' | 'PUBLISHED';
 
+export type CvAttributeOption = {
+  id: string;
+  label: string;
+  sortOrder?: number;
+};
+
 export type CvAttributeItem = {
   attributeId: string;
   attributeName: string;
   attributeType: string;
+  version?: number | null;
   isRequired: boolean;
   isEmpty: boolean;
   valueString?: string | null;
@@ -16,6 +23,7 @@ export type CvAttributeItem = {
   valueOptionLabel?: string | null;
   periodStart?: string | null;
   periodEnd?: string | null;
+  options?: CvAttributeOption[];
 };
 
 export type CvProjectItem = {

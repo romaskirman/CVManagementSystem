@@ -11,6 +11,10 @@ export const ATTRIBUTE_CATEGORY_OPTIONS: Array<{ value: AttributeCategory; label
   { value: 'EXPERIENCE', label: 'Experience' },
   { value: 'OTHER', label: 'Other' }
 ];
+//TODO
+export interface IBLALA {
+  value:AttributeType
+}
 
 export const ATTRIBUTE_TYPE_OPTIONS: Array<{ value: AttributeType; label: string }> = [
   { value: 'STRING', label: 'String' },

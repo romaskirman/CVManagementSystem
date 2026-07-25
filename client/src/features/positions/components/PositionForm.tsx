@@ -305,6 +305,7 @@ export function PositionForm({
                       value={rule.operator}
                       onChange={(e) => updateRule(index, { operator: e.target.value })}
                     >
+                    //TODO 
                       <option value="EQUALS">Equals</option>
                       <option value="NOT_EQUALS">Not equals</option>
                       <option value="CONTAINS">Contains</option>

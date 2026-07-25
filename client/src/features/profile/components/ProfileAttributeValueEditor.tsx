@@ -62,7 +62,7 @@ export function ProfileAttributeValueEditor({
 
     finishEdit();
   };
-
+  //TODO CHECHI TYPES VALUES ENUM
   return (
     <div className="card-block">
       <div className="section-header-inline">

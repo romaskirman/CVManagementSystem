@@ -70,7 +70,7 @@ export function DiscussionPanel({ positionId }: DiscussionPanelProps) {
 
       {isLoading ? (
         <div>Loading discussion...</div>
-      ) : !posts.length ? (
+      ) : !posts ? (
         <div>No discussion posts yet.</div>
       ) : (
         <div className="stack-list">

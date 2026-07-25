@@ -2,7 +2,6 @@ import { FormEvent, useMemo, useState } from 'react';
 import { AttributePayload } from '../../../shared/api/attributes.api';
 import { AttributeDetails } from '../types';
 import { ATTRIBUTE_CATEGORY_OPTIONS, ATTRIBUTE_TYPE_OPTIONS } from '../constants';
-import * as React from 'react';
 
 type AttributeFormProps = {
   initialValue?: AttributeDetails | null;
@@ -25,7 +24,7 @@ export function AttributeForm({
       sortOrder: item.sortOrder ?? index
     })) ?? []
   );
-
+  //Todo
   const isDropdownType = useMemo(() => type === 'ONE_OF_MANY', [type]);
 
   const addOption = () => {

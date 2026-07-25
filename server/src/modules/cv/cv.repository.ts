@@ -386,12 +386,22 @@ export class CvRepository {
       return false;
     }
 
-    await db.cvProject.deleteMany({
-      where: { cvId: params.cvId }
-    });
+    await db.$transaction(async (tx) => {
+      await tx.cvProject.deleteMany({
+        where: { cvId: params.cvId }
+      });
 
-    if (params.projects.length === 0) {
-      await db.cv.update({
+      if (params.projects.length > 0) {
+        await tx.cvProject.createMany({
+          data: params.projects.map((item) => ({
+            cvId: params.cvId,
+            projectId: item.projectId,
+            sortOrder: item.sortOrder
+          }))
+        });
+      }
+
+      await tx.cv.update({
         where: { id: params.cvId },
         data: {
           version: {
@@ -399,25 +409,6 @@ export class CvRepository {
           }
         }
       });
-
-      return true;
-    }
-
-    await db.cvProject.createMany({
-      data: params.projects.map((item) => ({
-        cvId: params.cvId,
-        projectId: item.projectId,
-        sortOrder: item.sortOrder
-      }))
-    });
-
-    await db.cv.update({
-      where: { id: params.cvId },
-      data: {
-        version: {
-          increment: 1
-        }
-      }
     });
 
     return true;

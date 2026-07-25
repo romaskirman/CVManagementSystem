@@ -27,7 +27,7 @@ export function UsersFiltersBar({
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search by email or name..."
       />
-
+      //TODO 'ACTIVE' | 'BLOCKED'
       <select value={status} onChange={(e) => setStatus(e.target.value as 'ACTIVE' | 'BLOCKED' | 'ALL')}>
         <option value="ALL">All statuses</option>
         <option value="ACTIVE">Active</option>

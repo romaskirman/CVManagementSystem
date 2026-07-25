@@ -17,7 +17,7 @@ export type AttributeListItem = {
   version?: number;
   updatedAt?: string;
 };
-
+//TODO INTERFACES
 export type AttributeDetails = {
   id: string;
   category: AttributeCategory;

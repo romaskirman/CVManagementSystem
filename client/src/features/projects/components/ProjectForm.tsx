@@ -102,7 +102,7 @@ export function ProjectForm({
           />
         </label>
 
-        {!!visibleSuggestions.length && (
+        {!!visibleSuggestions.length && ( //Todo !!
           <div className="tag-cloud">
             {visibleSuggestions.map((tag) => (
               <button

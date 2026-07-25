@@ -175,12 +175,15 @@ export function CvEditorPage() {
       <section className="card-block form-section">
         <h2>Candidate</h2>
         <div className="details-grid">
-          <div><strong>First name:</strong> {typedCv.builtInFields.firstName || '—'}</div>
-          <div><strong>Last name:</strong> {typedCv.builtInFields.lastName || '—'}</div>
-          <div><strong>Location:</strong> {typedCv.builtInFields.location || '—'}</div>
+          <div><strong>First name:</strong> {typedCv.builtInFields?.firstName || '—'}</div>
+          <div><strong>Last name:</strong> {typedCv.builtInFields?.lastName || '—'}</div>
+          <div><strong>Location:</strong> {typedCv.builtInFields?.location || '—'}</div>
+          <div>
+            <strong>Email:</strong> {typedCv.candidateEmail || '—'}
+          </div>
           <div>
             <strong>Photo:</strong>{' '}
-            {typedCv.builtInFields.photoUrl ? (
+            {typedCv.builtInFields?.photoUrl ? (
               <a href={typedCv.builtInFields.photoUrl} target="_blank" rel="noopener noreferrer">
                 Open image
               </a>
@@ -209,7 +212,7 @@ export function CvEditorPage() {
                 await saveAttributeMutation.mutateAsync({
                   cvId: typedCv.id,
                   payload: {
-                    version: typedCv.version,
+                    version: patch.version ?? item.version ?? undefined,
                     attributeId: item.attributeId,
                     stringValue: patch.valueString ?? null,
                     textValue: patch.valueText ?? null,

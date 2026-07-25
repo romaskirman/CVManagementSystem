@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { CvAttributeItem } from '../types';
+import { useEffect, useState } from 'react';
+import { CvAttributeItem, CvAttributeOption } from '../types';
 import * as React from 'react';
 
 type CvAttributeInlineEditorProps = {
@@ -15,6 +15,10 @@ export function CvAttributeInlineEditor({
 }: CvAttributeInlineEditorProps) {
   const [draft, setDraft] = useState<CvAttributeItem>(item);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(item);
+  }, [item]);
 
   const handleSave = async () => {
     try {
@@ -84,7 +88,12 @@ export function CvAttributeInlineEditor({
           <input
             type="date"
             value={draft.valueDate ?? ''}
-            onChange={(e) => setDraft((prev) => ({ ...prev, valueDate: e.target.value }))}
+            onChange={(e) =>
+              setDraft((prev) => ({
+                ...prev,
+                valueDate: e.target.value || null
+              }))
+            }
             disabled={!canEdit}
           />
         );
@@ -92,18 +101,35 @@ export function CvAttributeInlineEditor({
       case 'PERIOD':
         return (
           <div className="form-grid">
-            <input
-              type="date"
-              value={draft.periodStart ?? ''}
-              onChange={(e) => setDraft((prev) => ({ ...prev, periodStart: e.target.value }))}
-              disabled={!canEdit}
-            />
-            <input
-              type="date"
-              value={draft.periodEnd ?? ''}
-              onChange={(e) => setDraft((prev) => ({ ...prev, periodEnd: e.target.value }))}
-              disabled={!canEdit}
-            />
+            <label>
+              <span>Start date</span>
+              <input
+                type="date"
+                value={draft.periodStart ?? ''}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    periodStart: e.target.value || null
+                  }))
+                }
+                disabled={!canEdit}
+              />
+            </label>
+
+            <label>
+              <span>End date</span>
+              <input
+                type="date"
+                value={draft.periodEnd ?? ''}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    periodEnd: e.target.value || null
+                  }))
+                }
+                disabled={!canEdit}
+              />
+            </label>
           </div>
         );
 
@@ -111,19 +137,41 @@ export function CvAttributeInlineEditor({
         return (
           <input
             value={draft.valueImageUrl ?? ''}
-            onChange={(e) => setDraft((prev) => ({ ...prev, valueImageUrl: e.target.value }))}
+            onChange={(e) =>
+              setDraft((prev) => ({
+                ...prev,
+                valueImageUrl: e.target.value || null
+              }))
+            }
             disabled={!canEdit}
+            placeholder="https://example.com/image.jpg"
           />
         );
 
       case 'ONE_OF_MANY':
         return (
-          <input
-            value={draft.valueOptionId ?? ''}
-            onChange={(e) => setDraft((prev) => ({ ...prev, valueOptionId: e.target.value }))}
-            disabled={!canEdit}
-            placeholder="Option id"
-          />
+          <label>
+            <span>Select value</span>
+            <select
+              value={draft.valueOptionId ?? ''}
+              onChange={(e) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  valueOptionId: e.target.value || null,
+                  valueOptionLabel:
+                    item.options?.find((option: CvAttributeOption) => option.id === e.target.value)?.label ?? null
+                }))
+              }
+              disabled={!canEdit}
+            >
+              <option value="">Select an option</option>
+              {(item.options ?? []).map((option: CvAttributeOption) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
         );
 
       default:
@@ -146,7 +194,12 @@ export function CvAttributeInlineEditor({
         </div>
 
         {canEdit && (
-          <button type="button" onClick={() => void handleSave()} disabled={isSaving}>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => void handleSave()}
+            disabled={isSaving}
+          >
             {isSaving ? 'Saving...' : 'Save'}
           </button>
         )}

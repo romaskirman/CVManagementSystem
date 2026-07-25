@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { profileApi } from '../../shared/api/profile.api';
+import { cvApi } from '../../shared/api/cv.api';
 import { DataTable } from '../../shared/components/tables/DataTable';
 import * as React from 'react';
 
@@ -16,7 +16,7 @@ type MyCvRow = {
 export function MyCvsPage() {
   const { data, isLoading } = useQuery<{ items: MyCvRow[] }>({
     queryKey: ['my-cvs'],
-    queryFn: () => profileApi.getMyCvs()
+    queryFn: () => cvApi.list()
   });
 
   if (isLoading) {
