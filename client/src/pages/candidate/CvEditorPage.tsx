@@ -39,7 +39,7 @@ export function CvEditorPage() {
 
   const { data: position } = useQuery({
     queryKey: ['position-for-cv', cv?.positionId],
-    queryFn: () => positionsApi.getById(cv.positionId),
+    queryFn: () => positionsApi.getById(cv!.positionId),
     enabled: Boolean(cv?.positionId)
   });
 
@@ -63,7 +63,13 @@ export function CvEditorPage() {
   });
 
   const publishMutation = useMutation({
-    mutationFn: () => cvApi.publish(cvId!, { version: cv.version }),
+    mutationFn: () => {
+      if (!cvId || !cv) {
+        throw new Error('CV is not loaded');
+      }
+
+      return cvApi.publish(cvId, { version: cv.version });
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['cv-details', cvId] });
       void queryClient.invalidateQueries({ queryKey: ['my-cvs'] });
@@ -71,7 +77,13 @@ export function CvEditorPage() {
   });
 
   const unpublishMutation = useMutation({
-    mutationFn: () => cvApi.unpublish(cvId!, { version: cv.version }),
+    mutationFn: () => {
+      if (!cvId || !cv) {
+        throw new Error('CV is not loaded');
+      }
+
+      return cvApi.unpublish(cvId, { version: cv.version });
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['cv-details', cvId] });
       void queryClient.invalidateQueries({ queryKey: ['my-cvs'] });

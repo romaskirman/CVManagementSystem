@@ -26,7 +26,26 @@ export function PositionCvsPage() {
 
   const { data, isLoading } = useQuery<PositionCvsResponse>({
     queryKey: ['position-cvs', positionId],
-    queryFn: () => cvApi.list({ positionId })
+    queryFn: async () => {
+      const response = await cvApi.list({ positionId });
+      const normalized = response as Partial<PositionCvsResponse>;
+
+      return {
+        items: (normalized.items ?? []).map((item: any) => ({
+          id: item.id,
+          status: item.status,
+          likesCount: item.likesCount,
+          updatedAt: item.updatedAt,
+          candidate: {
+            email: item.candidate?.email ?? '—'
+          }
+        })),
+        total: normalized.total ?? 0,
+        page: normalized.page ?? 1,
+        pageSize: normalized.pageSize ?? 0
+      };
+    },
+    enabled: Boolean(positionId)
   });
 
   if (isLoading) {
