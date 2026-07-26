@@ -123,14 +123,25 @@ export function CvEditorPage() {
 
   const typedCv = cv as CvDetails;
   const availableProjects: CandidateProject[] = myProjects?.items ?? [];
-  const selectedProjectIds = typedCv.projects.map((item) => item.id);
   const maxProjects = position?.maxProjects ?? 3;
   const hasEmptyRequired = typedCv.attributes.some((item) => item.isRequired && item.isEmpty);
 
+  const [selectedProjectIdsState, setSelectedProjectIdsState] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    setSelectedProjectIdsState(typedCv.projects.map((item) => item.id));
+  }, [typedCv.projects]);
+
   const toggleProject = (projectId: string) => {
-    const next = selectedProjectIds.includes(projectId)
-      ? selectedProjectIds.filter((id) => id !== projectId)
-      : [...selectedProjectIds, projectId];
+    if (saveProjectsMutation.isPending) {
+      return;
+    }
+
+    const next = selectedProjectIdsState.includes(projectId)
+      ? selectedProjectIdsState.filter((id) => id !== projectId)
+      : [...selectedProjectIdsState, projectId];
+
+    setSelectedProjectIdsState(next);
 
     saveProjectsMutation.mutate({
       version: typedCv.version,
@@ -245,9 +256,9 @@ export function CvEditorPage() {
 
       <CvProjectsSelector
         projects={availableProjects}
-        selectedProjectIds={selectedProjectIds}
+        selectedProjectIds={selectedProjectIdsState}
         maxProjects={maxProjects}
-        canEdit={true}
+        canEdit={!saveProjectsMutation.isPending}
         onToggle={toggleProject}
       />
     </section>
