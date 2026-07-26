@@ -57,7 +57,8 @@ export function CvEditorPage() {
       version?: number;
       projects: Array<{ projectId: string; sortOrder?: number }>;
     }) => cvApi.updateProjects(cvId!, payload),
-    onSuccess: () => {
+    onSuccess: (updatedCv) => {
+      queryClient.setQueryData(['cv-details', cvId], updatedCv);
       void queryClient.invalidateQueries({ queryKey: ['cv-details', cvId] });
     }
   });
@@ -98,6 +99,14 @@ export function CvEditorPage() {
     }
   });
 
+  const [selectedProjectIdsState, setSelectedProjectIdsState] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+  setSelectedProjectIdsState(
+    cv?.projects?.map((item: { id: string }) => item.id) ?? []
+  );
+}, [cv?.projects]);
+
   if (isCreateMode) {
     return (
       <section className="page-section">
@@ -125,12 +134,6 @@ export function CvEditorPage() {
   const availableProjects: CandidateProject[] = myProjects?.items ?? [];
   const maxProjects = position?.maxProjects ?? 3;
   const hasEmptyRequired = typedCv.attributes.some((item) => item.isRequired && item.isEmpty);
-
-  const [selectedProjectIdsState, setSelectedProjectIdsState] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    setSelectedProjectIdsState(typedCv.projects.map((item) => item.id));
-  }, [typedCv.projects]);
 
   const toggleProject = (projectId: string) => {
     if (saveProjectsMutation.isPending) {
