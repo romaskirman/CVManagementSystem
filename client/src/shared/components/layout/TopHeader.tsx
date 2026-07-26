@@ -31,19 +31,45 @@ export function TopHeader() {
       </form>
 
       <div className="top-header__actions">
-        <select value={locale} onChange={(e) => setLocale(e.target.value as 'en' | 'ru')}>
-          <option value="en">EN</option>
-          <option value="ru">RU</option>
-        </select>
+        <div className="top-header__select-shell">
+          <select
+            className="top-header__control top-header__control--select"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value as 'en' | 'ru')}
+            aria-label="Application language"
+          >
+            <option value="en">EN</option>
+            <option value="ru">RU</option>
+          </select>
+          <span className="top-header__select-icon" aria-hidden="true">
+            ▾
+          </span>
+        </div>
 
-        <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        <button
+          type="button"
+          className="top-header__control top-header__button top-header__button--theme"
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        >
           {theme === 'light' ? t.theme.dark : t.theme.light}
         </button>
 
         {user ? (
-          <button onClick={() => void signOut()}>{t.auth.logout}</button>
+          <button
+            type="button"
+            className="top-header__control top-header__button top-header__button--auth"
+            onClick={() => void signOut()}
+          >
+            {t.auth.logout}
+          </button>
         ) : (
-          <button onClick={() => navigate('/signin')}>{t.auth.signIn}</button>
+          <button
+            type="button"
+            className="top-header__control top-header__button top-header__button--auth"
+            onClick={() => navigate('/signin')}
+          >
+            {t.auth.signIn}
+          </button>
         )}
       </div>
     </header>

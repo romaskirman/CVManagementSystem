@@ -71,7 +71,7 @@ export function ProjectForm({
           <input value={name} onChange={(e) => setName(e.target.value)} required />
         </label>
 
-        <div className="form-grid">
+        <div className="form-grid project-edit-form-shell">
           <label>
             Start date
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -83,7 +83,7 @@ export function ProjectForm({
           </label>
         </div>
 
-        <label>
+        <label className="project-edit-form-shell">
           Description (Markdown)
           <textarea
             rows={10}
@@ -93,7 +93,7 @@ export function ProjectForm({
           />
         </label>
 
-        <label>
+        <label className="project-edit-form-shell">
           Technology tags
           <input
             value={tagsInput}

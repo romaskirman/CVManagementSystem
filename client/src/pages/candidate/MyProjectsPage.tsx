@@ -90,17 +90,19 @@ export function MyProjectsPage() {
                       </button>
                     </div>
 
-                    <ProjectForm
-                      initialValue={project}
-                      suggestedTags={suggestedTags}
-                      onSubmit={(payload) =>
-                        updateMutation.mutate({
-                          projectId: project.id,
-                          payload
-                        })
-                      }
-                      isSubmitting={updateMutation.isPending}
-                    />
+                    <div className="project-edit-form-shell">
+                      <ProjectForm
+                        initialValue={project}
+                        suggestedTags={suggestedTags}
+                        onSubmit={(payload) =>
+                          updateMutation.mutate({
+                            projectId: project.id,
+                            payload
+                          })
+                        }
+                        isSubmitting={updateMutation.isPending}
+                      />
+                    </div>
                   </>
                 ) : (
                   <>

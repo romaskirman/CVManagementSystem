@@ -62,30 +62,43 @@ export function ProfileAttributeValueEditor({
 
     finishEdit();
   };
-  //TODO CHECHI TYPES VALUES ENUM
+
   return (
-    <div className="card-block">
-      <div className="section-header-inline">
+    <div className="card-block profile-attribute-card">
+      <div className="section-header-inline profile-attribute-card__header">
         <h3>{item.attributeName}</h3>
 
-        <div className="inline-actions">
-          <button type="button" onClick={() => setIsEditing(true)}>
+        <div className="inline-actions profile-attribute-card__actions">
+          <button
+            type="button"
+            className="btn-secondary profile-attribute-card__action"
+            onClick={() => setIsEditing(true)}
+          >
             Edit
           </button>
 
           {onRemove && (
-            <button type="button" onClick={onRemove}>
+            <button
+              type="button"
+              className="btn-secondary profile-attribute-card__action profile-attribute-card__action--danger"
+              onClick={onRemove}
+            >
               Remove
             </button>
           )}
         </div>
       </div>
 
-      {!isEditing && <div>{renderValue(item)}</div>}
+      {!isEditing && (
+        <div className="profile-attribute-card__value">
+          {renderValue(item)}
+        </div>
+      )}
 
       {isEditing && type === 'STRING' && (
         <input
           autoFocus
+          className="profile-attribute-input"
           value={item.stringValue ?? ''}
           onChange={(e) => onChange({ stringValue: e.target.value })}
           onBlur={finishEdit}
@@ -97,6 +110,7 @@ export function ProfileAttributeValueEditor({
         <textarea
           autoFocus
           rows={5}
+          className="profile-attribute-input profile-attribute-input--textarea"
           value={item.textValue ?? ''}
           onChange={(e) => onChange({ textValue: e.target.value })}
           onBlur={finishEdit}
@@ -107,6 +121,7 @@ export function ProfileAttributeValueEditor({
       {isEditing && type === 'IMAGE' && (
         <input
           autoFocus
+          className="profile-attribute-input"
           value={item.imageUrl ?? ''}
           onChange={(e) => onChange({ imageUrl: e.target.value })}
           onBlur={finishEdit}
@@ -118,6 +133,7 @@ export function ProfileAttributeValueEditor({
         <input
           autoFocus
           type="number"
+          className="profile-attribute-input"
           value={item.numberValue ?? ''}
           onChange={(e) =>
             onChange({
@@ -130,7 +146,7 @@ export function ProfileAttributeValueEditor({
       )}
 
       {isEditing && type === 'BOOLEAN' && (
-        <label className="checkbox-inline">
+        <label className="profile-attribute-checkbox">
           <input
             autoFocus
             type="checkbox"
@@ -138,57 +154,71 @@ export function ProfileAttributeValueEditor({
             onChange={(e) => onChange({ booleanValue: e.target.checked })}
             onBlur={finishEdit}
           />
-          Checked
+          <span>Checked</span>
         </label>
       )}
 
       {isEditing && type === 'DATE' && (
-        <input
-          autoFocus
-          type="date"
-          value={fromIsoDate(item.dateValue)}
-          onChange={(e) => onChange({ dateValue: toIsoDate(e.target.value) })}
-          onBlur={finishEdit}
-        />
+        <div className="profile-attribute-date-shell">
+          <input
+            autoFocus
+            type="date"
+            className="profile-attribute-date-input"
+            value={fromIsoDate(item.dateValue)}
+            onChange={(e) => onChange({ dateValue: toIsoDate(e.target.value) })}
+            onBlur={finishEdit}
+          />
+        </div>
       )}
 
       {isEditing && type === 'PERIOD' && (
-        <div className="form-grid" onBlur={handlePeriodBlur}>
-          <label>
-            Start
-            <input
-              autoFocus
-              type="date"
-              value={fromIsoDate(item.periodStart)}
-              onChange={(e) => onChange({ periodStart: toIsoDate(e.target.value) })}
-            />
+        <div className="form-grid profile-attribute-period-grid" onBlur={handlePeriodBlur}>
+          <label className="profile-attribute-field">
+            <span className="profile-attribute-field__label">Start</span>
+            <div className="profile-attribute-date-shell">
+              <input
+                autoFocus
+                type="date"
+                className="profile-attribute-date-input"
+                value={fromIsoDate(item.periodStart)}
+                onChange={(e) => onChange({ periodStart: toIsoDate(e.target.value) })}
+              />
+            </div>
           </label>
 
-          <label>
-            End
-            <input
-              type="date"
-              value={fromIsoDate(item.periodEnd)}
-              onChange={(e) => onChange({ periodEnd: toIsoDate(e.target.value) })}
-            />
+          <label className="profile-attribute-field">
+            <span className="profile-attribute-field__label">End</span>
+            <div className="profile-attribute-date-shell">
+              <input
+                type="date"
+                className="profile-attribute-date-input"
+                value={fromIsoDate(item.periodEnd)}
+                onChange={(e) => onChange({ periodEnd: toIsoDate(e.target.value) })}
+              />
+            </div>
           </label>
         </div>
       )}
 
       {isEditing && type === 'ONE_OF_MANY' && (
-        <select
-          autoFocus
-          value={item.optionId ?? ''}
-          onChange={(e) => onChange({ optionId: e.target.value || null })}
-          onBlur={finishEdit}
-        >
-          <option value="">Select option</option>
-          {(item.options ?? []).map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        <div className="profile-attribute-select-shell">
+          <select
+            autoFocus
+            className="profile-attribute-select"
+            value={item.optionId ?? ''}
+            onChange={(e) => onChange({ optionId: e.target.value || null })}
+            onBlur={finishEdit}
+          >
+            <option value="">Select option</option>
+            {(item.options ?? []).map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          <span className="profile-attribute-select-shell__icon">▾</span>
+        </div>
       )}
     </div>
   );

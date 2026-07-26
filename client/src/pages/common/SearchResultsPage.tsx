@@ -26,7 +26,7 @@ export function SearchResultsPage() {
   const users = data?.users?.items ?? [];
 
   return (
-    <section className="page-section">
+    <section className="page-section search-results-page">
       <div className="page-header">
         <h1>Search results</h1>
         <p>Query: {q}</p>
@@ -67,7 +67,7 @@ export function SearchResultsPage() {
                   }
                   className="inline-editor-row"
                 >
-                  <strong>{item.positionTitle}</strong>
+                  <strong>{item.position.title}</strong>
                   <span>Status: {item.status}</span>
                   <span>Likes: {item.likesCount ?? 0}</span>
                 </Link>

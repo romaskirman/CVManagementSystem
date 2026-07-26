@@ -73,7 +73,7 @@ export function DiscussionPanel({ positionId }: DiscussionPanelProps) {
       ) : !posts ? (
         <div>No discussion posts yet.</div>
       ) : (
-        <div className="stack-list">
+        <div className="stack-list discussion-posts-list">
           {posts.map((post) => (
             <article key={post.id} className="discussion-post">
               <div className="discussion-post__meta">

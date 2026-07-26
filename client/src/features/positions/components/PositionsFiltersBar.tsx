@@ -46,13 +46,18 @@ export function PositionsFiltersBar({
         onChange={(e) => setCompany(e.target.value)}
       />
 
-      <select value={level} onChange={(e) => setLevel(e.target.value)}>
-        <option value="">Any level</option>
-        <option value="JUNIOR">Junior</option>
-        <option value="MIDDLE">Middle</option>
-        <option value="SENIOR">Senior</option>
-        <option value="C_LEVEL">C-Level</option>
-      </select>
+      <div className="filters-select-shell">
+        <select value={level} onChange={(e) => setLevel(e.target.value)} className="filters-select">
+          <option value="">Any level</option>
+          <option value="JUNIOR">Junior</option>
+          <option value="MIDDLE">Middle</option>
+          <option value="SENIOR">Senior</option>
+          <option value="C_LEVEL">C-Level</option>
+        </select>
+        <span className="filters-select-shell__icon" aria-hidden="true">
+          ▾
+        </span>
+      </div>
 
       <button type="submit">Apply</button>
     </form>
