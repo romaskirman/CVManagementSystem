@@ -52,6 +52,9 @@ export function CvEditorPage() {
     }
   });
 
+  const [selectedProjectIdsState, setSelectedProjectIdsState] = React.useState<string[]>([]);
+  const initializedCvIdRef = React.useRef<string | null>(null);
+
   const saveProjectsMutation = useMutation({
     mutationFn: (payload: {
       version?: number;
@@ -59,6 +62,7 @@ export function CvEditorPage() {
     }) => cvApi.updateProjects(cvId!, payload),
     onSuccess: (updatedCv) => {
       queryClient.setQueryData(['cv-details', cvId], updatedCv);
+      setSelectedProjectIdsState(updatedCv.projects.map((item) => item.id));
       void queryClient.invalidateQueries({ queryKey: ['cv-details', cvId] });
     }
   });
@@ -99,13 +103,16 @@ export function CvEditorPage() {
     }
   });
 
-  const [selectedProjectIdsState, setSelectedProjectIdsState] = React.useState<string[]>([]);
-
   React.useEffect(() => {
-  setSelectedProjectIdsState(
-    cv?.projects?.map((item: { id: string }) => item.id) ?? []
-  );
-}, [cv?.projects]);
+    if (!cv || !cvId) {
+      return;
+    }
+
+    if (initializedCvIdRef.current !== cvId) {
+      setSelectedProjectIdsState(cv.projects.map((item: { id: string }) => item.id));
+      initializedCvIdRef.current = cvId;
+    }
+  }, [cv, cvId]);
 
   if (isCreateMode) {
     return (
