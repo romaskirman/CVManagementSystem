@@ -16,41 +16,95 @@ export function CvProjectsSelector({
   canEdit,
   onToggle
 }: CvProjectsSelectorProps) {
+  const visibleProjects = canEdit
+    ? projects
+    : projects.filter((project) => selectedProjectIds.includes(project.id));
+
   return (
     <section className="card-block">
       <div className="section-header-inline">
         <h2>Projects</h2>
-        <span>Selected: {selectedProjectIds.length}/{maxProjects}</span>
+        <span>
+          Selected: {selectedProjectIds.length}/{maxProjects}
+        </span>
       </div>
 
       <div className="stack-list">
-        {projects.map((project) => {
-          const selected = selectedProjectIds.includes(project.id);
-          const disabled = !selected && selectedProjectIds.length >= maxProjects;
+        {visibleProjects.length === 0 ? (
+          <div className="cv-project-card">
+            <div className="cv-project-meta-card">
+              <div className="cv-project-meta-card__label">Projects</div>
+              <div className="cv-project-meta-card__value">—</div>
+            </div>
+          </div>
+        ) : (
+          visibleProjects.map((project) => {
+            const selected = selectedProjectIds.includes(project.id);
+            const disabled = !selected && selectedProjectIds.length >= maxProjects;
 
-          return (
-            <label key={project.id} className="cv-project-select-row">
-              <input
-                type="checkbox"
-                checked={selected}
-                disabled={!canEdit || disabled}
-                onChange={() => onToggle(project.id)}
-              />
+            return (
+              <div
+                key={project.id}
+                className={`cv-project-card ${selected ? 'cv-project-card--selected' : ''} ${
+                  !canEdit ? 'cv-project-card--readonly' : ''
+                }`}
+              >
+                {canEdit && (
+                  <label className="cv-project-select-row">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      disabled={!canEdit || disabled}
+                      onChange={() => onToggle(project.id)}
+                    />
+                    <span>{selected ? 'Selected' : 'Select project'}</span>
+                  </label>
+                )}
 
-              <div>
-                <strong>{project.name}</strong>
-                <div>{project.startDate ?? '—'} — {project.endDate ?? 'Present'}</div>
-                <div className="tag-cloud">
-                  {project.tags.map((tag) => (
-                    <span key={tag.name} className="tag-pill">
-                      {tag.name}
-                    </span>
-                  ))}
+                <div className="cv-project-meta-grid">
+                  <div className="cv-project-meta-card">
+                    <div className="cv-project-meta-card__label">Project name</div>
+                    <div className="cv-project-meta-card__value">{project.name || '—'}</div>
+                  </div>
+
+                  <div className="cv-project-meta-card">
+                    <div className="cv-project-meta-card__label">Start date</div>
+                    <div className="cv-project-meta-card__value">{project.startDate ?? '—'}</div>
+                  </div>
+
+                  <div className="cv-project-meta-card">
+                    <div className="cv-project-meta-card__label">End date</div>
+                    <div className="cv-project-meta-card__value">{project.endDate ?? 'Present'}</div>
+                  </div>
+
+                  <div className="cv-project-meta-card cv-project-meta-card--full">
+                    <div className="cv-project-meta-card__label">Description</div>
+                    <div className="cv-project-meta-card__value">
+                      {project.descriptionMarkdown?.trim() || '—'}
+                    </div>
+                  </div>
+
+                  <div className="cv-project-meta-card cv-project-meta-card--full">
+                    <div className="cv-project-meta-card__label">Tags</div>
+                    <div className="cv-project-meta-card__value">
+                      {project.tags.length > 0 ? (
+                        <div className="tag-cloud">
+                          {project.tags.map((tag) => (
+                            <span key={tag.name} className="tag-pill">
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        '—'
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </label>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </section>
   );
