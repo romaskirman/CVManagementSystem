@@ -14,7 +14,7 @@ type ProfileCvsSectionProps = {
 
 export function ProfileCvsSection({ items }: ProfileCvsSectionProps) {
   return (
-    <section className="card-block">
+    <section className="card-block my-profile-cv-section">
       <div className="section-header-inline">
         <h2>CVs</h2>
         <Link className="btn-secondary" to="/cvs">

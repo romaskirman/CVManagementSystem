@@ -10,6 +10,21 @@ type DiscussionPanelProps = {
   positionId: string;
 };
 
+function formatRoles(roles?: string[]) {
+  if (!roles?.length) {
+    return '';
+  }
+
+  return roles
+    .map((role) =>
+      role
+        .split('_')
+        .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+        .join(' ')
+    )
+    .join(', ');
+}
+
 export function DiscussionPanel({ positionId }: DiscussionPanelProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -43,7 +58,7 @@ export function DiscussionPanel({ positionId }: DiscussionPanelProps) {
 
   return (
     <section className="card-block form-section">
-      <div className="section-header-inline">
+      <div className="section-header-inline discussions-block-dark">
         <h2>Discussion</h2>
         <span>{posts.length} posts</span>
       </div>
@@ -70,18 +85,25 @@ export function DiscussionPanel({ positionId }: DiscussionPanelProps) {
 
       {isLoading ? (
         <div>Loading discussion...</div>
-      ) : !posts ? (
+      ) : posts.length === 0 ? (
         <div>No discussion posts yet.</div>
       ) : (
         <div className="stack-list discussion-posts-list">
           {posts.map((post) => (
             <article key={post.id} className="discussion-post">
               <div className="discussion-post__meta">
-                {post.authorPublicProfileUrl ? (
-                  <Link to={post.authorPublicProfileUrl}>{post.authorName}</Link>
-                ) : (
-                  <strong>{post.authorName}</strong>
-                )}
+                <div className="discussion-post__author-line">
+                  {post.authorPublicProfileUrl ? (
+                    <Link to={post.authorPublicProfileUrl}>{post.authorName}</Link>
+                  ) : (
+                    <strong>{post.authorName}</strong>
+                  )}
+
+                  {!!post.authorRoles?.length && (
+                    <span className="discussion-post__role">{formatRoles(post.authorRoles)}</span>
+                  )}
+                </div>
+
                 <span>{new Date(post.createdAt).toLocaleString()}</span>
               </div>
 

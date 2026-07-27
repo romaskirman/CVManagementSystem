@@ -22,7 +22,7 @@ export function CvProjectsSelector({
 
   return (
     <section className="card-block">
-      <div className="section-header-inline">
+      <div className="section-header-inline cv-editor-pojects-title">
         <h2>Projects</h2>
         <span>
           Selected: {selectedProjectIds.length}/{maxProjects}

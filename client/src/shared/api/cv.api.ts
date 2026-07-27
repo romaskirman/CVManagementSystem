@@ -92,6 +92,8 @@ function mapCvListItem(item: any) {
       typeof item.isVisibleToRecruiters === 'boolean'
         ? item.isVisibleToRecruiters
         : item.status === 'PUBLISHED',
+    hasPositionAccess:
+      typeof item.hasPositionAccess === 'boolean' ? item.hasPositionAccess : true,
     likesCount: item.likesCount ?? 0,
     updatedAt: item.updatedAt
   };

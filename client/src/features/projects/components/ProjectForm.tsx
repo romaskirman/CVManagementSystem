@@ -63,7 +63,7 @@ export function ProjectForm({
 
   return (
     <form className="entity-form" onSubmit={handleSubmit}>
-      <section className="card-block form-section">
+      <section className="card-block form-section edit-project-title">
         <h2>Project</h2>
 
         <label>

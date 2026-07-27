@@ -79,7 +79,7 @@ export function MyProjectsPage() {
               <section key={project.id} className="card-block">
                 {isEditing ? (
                   <>
-                    <div className="section-header-inline">
+                    <div className="section-header-inline edit-project-section">
                       <h2>Edit project</h2>
                       <button
                         className="btn-danger"

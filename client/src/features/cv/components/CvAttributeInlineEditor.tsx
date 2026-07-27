@@ -337,9 +337,9 @@ export function CvAttributeInlineEditor({
 
   return (
     <div className={`cv-attribute-row ${shouldHighlightInvalid ? 'cv-attribute-row--empty' : ''}`}>
-      <div className="cv-attribute-row__header">
+      <div className="cv-attribute-row__header cv-attribute-row-dark">
         <div>
-          <strong>{item.attributeName}</strong>
+          <strong className={`"${shouldHighlightInvalid ? 'cv-attribute-row--empty-title' : ''}`}>{item.attributeName}</strong>
           {item.isRequired && <span className="required-mark"> * required</span>}
         </div>
 

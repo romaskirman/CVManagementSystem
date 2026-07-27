@@ -1,5 +1,12 @@
 import { http } from './http';
 
+function mapPosition(item: any) {
+  return {
+    ...item,
+    hasAccess: typeof item?.hasAccess === 'boolean' ? item.hasAccess : true
+  };
+}
+
 export const statsApi = {
   async getPublicStats() {
     const { data } = await http.get('/stats/public');
@@ -8,12 +15,12 @@ export const statsApi = {
 
   async getLatestPositions() {
     const { data } = await http.get('/stats/latest-positions');
-    return data;
+    return Array.isArray(data) ? data.map(mapPosition) : [];
   },
 
   async getPopularPositions() {
     const { data } = await http.get('/stats/popular-positions');
-    return data;
+    return Array.isArray(data) ? data.map(mapPosition) : [];
   },
 
   async getTagCloud() {

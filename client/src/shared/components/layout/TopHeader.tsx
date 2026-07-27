@@ -18,6 +18,8 @@ export function TopHeader() {
     navigate(`/search?q=${encodeURIComponent(q.trim())}`);
   };
 
+  const primaryRole = user?.roles?.[0] ?? '';
+
   return (
     <header className="top-header">
       <div className="top-header__brand">CV Management</div>
@@ -31,7 +33,7 @@ export function TopHeader() {
       </form>
 
       <div className="top-header__actions">
-        <div className="top-header__select-shell">
+        <div className="top-header__select-shell top-header-language-dark">
           <select
             className="top-header__control top-header__control--select"
             value={locale}
@@ -55,13 +57,20 @@ export function TopHeader() {
         </button>
 
         {user ? (
-          <button
-            type="button"
-            className="top-header__control top-header__button top-header__button--auth"
-            onClick={() => void signOut()}
-          >
-            {t.auth.logout}
-          </button>
+          <>
+            <button
+              type="button"
+              className="top-header__control top-header__button top-header__button--auth"
+              onClick={() => void signOut()}
+            >
+              {t.auth.logout}
+            </button>
+
+            <div className="top-header__user-meta">
+              <div className="top-header__user-email">{user.email}</div>
+              <div className="top-header__user-role">{primaryRole}</div>
+            </div>
+          </>
         ) : (
           <button
             type="button"

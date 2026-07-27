@@ -129,6 +129,39 @@ a {
   margin-left: auto;
 }
 
+.top-header__user-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+  margin-left: 4px;
+  line-height: 1.2;
+}
+
+.top-header__user-email {
+  max-width: 220px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-header__user-role {
+  max-width: 220px;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .top-header__select-shell {
   position: relative;
   flex-shrink: 0;
@@ -619,6 +652,24 @@ a {
     margin: 0;
     color: var(--muted);
   }
+
+  .hero-block h1 {
+    color: #111827;
+  }
+
+:root[data-theme='dark'] .card-block .home-page-title-color > h2 {
+  color: #ffffff;
+}
+
+:root[data-theme='dark'] .home-page-tag-color > h2 {
+  color: #ffffff;
+}
+
+.home-page-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
 .position-highlights {
   display: grid;
@@ -1440,6 +1491,45 @@ a {
   .profile-attribute-period-grid {
     grid-template-columns: 1fr;
   }
+
+  .top-header {
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 12px;
+  }
+
+  .top-header__brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .top-header__actions {
+    flex: 0 0 auto;
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .top-header__search {
+    order: 3;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+    .top-header__search input {
+      width: 100%;
+      height: 44px;
+    }
+
+  .top-header__user-meta {
+    max-width: 140px;
+    align-items: flex-start;
+  }
+
+  .top-header__user-email,
+  .top-header__user-role {
+    max-width: 140px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1459,6 +1549,45 @@ a {
   .sidebar__link {
     padding: 8px 12px;
   }
+
+  .top-header {
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 12px;
+  }
+
+  .top-header__brand {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .top-header__actions {
+    flex: 0 0 auto;
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .top-header__search {
+    order: 3;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+    .top-header__search input {
+      width: 100%;
+      height: 44px;
+    }
+
+  .top-header__user-meta {
+    max-width: 140px;
+    align-items: flex-start;
+  }
+
+  .top-header__user-email,
+  .top-header__user-role {
+    max-width: 140px;
+  }
 }
 
 .app-shell {
@@ -1475,6 +1604,78 @@ a {
   flex: 1;
   padding: 24px;
   min-width: 0;
+}
+
+:root[data-theme='dark'] .my-profile-me-section > h2 {
+    color: white;
+}
+
+:root[data-theme='dark'] .my-profile-cv-section {
+    margin-top: 24px;
+}
+
+:root[data-theme='dark'] .my-profile-cv-section > div > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .project-card__title-block > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .edit-project-section > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .edit-project-title > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .cv-editor-title > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .cv-editor-pojects-title > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] select > option {
+  color: #111827;
+}
+
+:root[data-theme='dark'] .positions-filter-dark select option {
+  color: white;
+}
+
+:root[data-theme='dark'] .positions-details-dark > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .discussions-block-dark > h2 {
+  color: white;
+}
+
+:root[data-theme='dark'] .top-header-language-dark select option {
+  color: white;
+}
+
+:root[data-theme='dark'] .conflict-banner-dark {
+  color: #111827;
+}
+
+:root[data-theme='dark'] .cv-generation-conflict-error {
+  color: #111827;
+}
+
+.discussion-post__author-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.discussion-post__role {
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
 @media (max-width: 900px) {

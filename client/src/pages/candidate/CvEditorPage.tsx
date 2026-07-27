@@ -15,6 +15,12 @@ type DraftRegistryItem = {
   isEmpty: boolean;
 };
 
+type ApiErrorPayload = {
+  message?: string;
+  code?: string;
+  requestId?: string;
+};
+
 function normalizeStringOrNull(value?: string | null) {
   if (typeof value !== 'string') {
     return null;
@@ -36,6 +42,21 @@ function areAttributesEqual(left: CvAttributeItem, right: CvAttributeItem) {
     (left.valueImageUrl ?? null) === (right.valueImageUrl ?? null) &&
     (left.valueOptionId ?? null) === (right.valueOptionId ?? null)
   );
+}
+
+function getCreateCvErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return null;
+  }
+
+  const candidate = error as {
+    response?: {
+      data?: ApiErrorPayload;
+    };
+    message?: string;
+  };
+
+  return candidate.response?.data?.message ?? candidate.message ?? null;
 }
 
 export function CvEditorPage() {
@@ -180,6 +201,8 @@ export function CvEditorPage() {
   );
 
   if (isCreateMode) {
+    const createErrorMessage = getCreateCvErrorMessage(createMutation.error);
+
     return (
       <section className="page-section">
         <div className="page-header">
@@ -194,6 +217,12 @@ export function CvEditorPage() {
         >
           {createMutation.isPending ? 'Creating...' : 'Generate CV'}
         </button>
+
+        {createErrorMessage && (
+          <div className="conflict-banner top-spaced cv-generation-conflict-error" role="alert">
+            {createErrorMessage}
+          </div>
+        )}
       </section>
     );
   }
@@ -364,7 +393,7 @@ export function CvEditorPage() {
       )}
 
       <section className="card-block form-section">
-        <div className="section-header-inline">
+        <div className="section-header-inline cv-editor-title">
           <h2>Candidate</h2>
           <Link className="btn-secondary" to="/profile">
             Open profile

@@ -13,7 +13,11 @@ export function PositionsPage() {
 
   const { data, isLoading } = usePositions(filters);
 
-  const rows: PositionListItem[] = useMemo(() => data?.items ?? [], [data]);
+  const rows: PositionListItem[] = useMemo(() => {
+    return (data?.items ?? []).filter(
+      (position: PositionListItem) => position.hasAccess !== false
+    );
+  }, [data]);
 
   return (
     <section className="page-section">

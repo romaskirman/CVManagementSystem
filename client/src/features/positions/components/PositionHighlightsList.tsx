@@ -67,12 +67,14 @@ export function PositionHighlightsList({
   mode
 }: PositionHighlightsListProps) {
   const visiblePositions = React.useMemo(() => {
-    return sortPositions(positions, mode).slice(0, 3);
+    return sortPositions(positions, mode)
+      .filter((position) => position.hasAccess !== false)
+      .slice(0, 3);
   }, [positions, mode]);
 
   return (
     <section className="card-block">
-      <div className="section-header-inline">
+      <div className="section-header-inline home-page-title-color">
         <h2>{title}</h2>
       </div>
 

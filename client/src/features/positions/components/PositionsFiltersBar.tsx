@@ -46,7 +46,7 @@ export function PositionsFiltersBar({
         onChange={(e) => setCompany(e.target.value)}
       />
 
-      <div className="filters-select-shell">
+      <div className="filters-select-shell positions-filter-dark">
         <select value={level} onChange={(e) => setLevel(e.target.value)} className="filters-select">
           <option value="">Any level</option>
           <option value="JUNIOR">Junior</option>

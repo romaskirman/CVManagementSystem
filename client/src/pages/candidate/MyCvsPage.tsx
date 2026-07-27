@@ -9,6 +9,7 @@ type MyCvRow = {
   positionTitle: string;
   status: string;
   isVisibleToRecruiters: boolean;
+  hasPositionAccess: boolean;
   likesCount?: number;
   updatedAt: string;
 };
@@ -24,6 +25,7 @@ export function MyCvsPage() {
   }
 
   const rows: MyCvRow[] = data?.items ?? [];
+  const visibleRows = rows.filter((row) => row.hasPositionAccess);
 
   return (
     <section className="page-section">
@@ -33,7 +35,7 @@ export function MyCvsPage() {
       </div>
 
       <DataTable<MyCvRow>
-        rows={rows}
+        rows={visibleRows}
         emptyText="No CVs yet. Open a position and create one from there."
         columns={[
           {

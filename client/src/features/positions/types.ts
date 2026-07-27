@@ -58,6 +58,7 @@ export type PositionListItem = {
   id: string;
   title: string;
   shortDescription: string;
+  hasAccess?: boolean;
   visibilityMode: PositionVisibilityMode;
   company?: string | null;
   level?: PositionLevel | null;

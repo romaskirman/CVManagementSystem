@@ -25,7 +25,7 @@ export function HomePage() {
   });
 
   return (
-    <section className="page-section">
+    <section className="page-section home-page-sections">
       <div className="hero-block">
         <h1>CV Management System</h1>
         <p>Reusable profiles, customizable positions, automatically generated CVs.</p>
@@ -51,7 +51,7 @@ export function HomePage() {
         mode="popular"
       />
 
-      <section className="card-block">
+      <section className="card-block home-page-tag-color">
         <h2>Tag cloud</h2>
         <div className="tag-cloud">
           {(tagCloud ?? []).map((tag: { id: string; name: string; count: number }) => (

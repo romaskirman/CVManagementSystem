@@ -125,7 +125,7 @@ export function PositionDetailsPage() {
       {activeTab === 'overview' && (
         <>
           <div className="details-grid">
-            <section className="card-block">
+            <section className="card-block positions-details-dark">
               <h2>Basic info</h2>
               <dl className="details-list">
                 <div><dt>Company</dt><dd>{position.company ?? '—'}</dd></div>
@@ -135,7 +135,7 @@ export function PositionDetailsPage() {
               </dl>
             </section>
 
-            <section className="card-block">
+            <section className="card-block positions-details-dark">
               <h2>Attributes</h2>
               <ul className="clean-list">
                 {position.attributes.map((item: PositionAttributeItem) => (
@@ -147,7 +147,7 @@ export function PositionDetailsPage() {
               </ul>
             </section>
 
-            <section className="card-block">
+            <section className="card-block positions-details-dark">
               <h2>Access rules</h2>
               {position.accessRules.length === 0 ? (
                 <div>No access rules. This position is public.</div>
@@ -162,7 +162,7 @@ export function PositionDetailsPage() {
               )}
             </section>
 
-            <section className="card-block">
+            <section className="card-block positions-details-dark">
               <h2>Project tags</h2>
               <div className="tag-cloud">
                 {position.projectTags.map((tag: PositionProjectTag) => (

@@ -338,7 +338,7 @@ export function MyProfilePage() {
         </div>
       )}
 
-      <section className="card-block form-section">
+      <section className="card-block form-section my-profile-me-section">
         <h2>Me</h2>
 
         <div className="form-grid me-fields-grid">
