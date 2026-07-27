@@ -104,7 +104,7 @@ export function VerifyEmailPage() {
 
         <div style={{ marginTop: 16 }}>
           <button type="button" onClick={onResend} disabled={isResending}>
-            {isResending ? 'Sending...' : 'Resend code'}
+            {isResending ? 'Sending...' : 'Send code'}
           </button>
         </div>
       </div>
