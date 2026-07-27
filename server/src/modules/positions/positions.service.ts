@@ -3,12 +3,15 @@ import { ConflictError } from '../../common/errors/ConflictError';
 import { ForbiddenError } from '../../common/errors/ForbiddenError';
 import { NotFoundError } from '../../common/errors/NotFoundError';
 import { ValidationError } from '../../common/errors/ValidationError';
-import { getPagination } from '../../utils/pagination';
-import { isAdmin, isRecruiter } from '../../utils/permissions';
 import { RequestUser } from '../../common/types/request-user.type';
+import { getPagination } from '../../utils/pagination';
+import { isAdmin, isCandidate, isRecruiter } from '../../utils/permissions';
 import { PositionAccessRulesService } from './position-access-rules.service';
-import { CreatePositionInput, PositionsQuery, UpdatePositionInput } from './positions.types';
 import { PositionsRepository } from './positions.repository';
+import { CreatePositionInput, PositionsQuery, UpdatePositionInput } from './positions.types';
+
+type PositionListItem = Awaited<ReturnType<PositionsRepository['findPositions']>>['items'][number];
+type PositionDetails = NonNullable<Awaited<ReturnType<PositionsRepository['findPositionById']>>>;
 
 export class PositionsService {
   constructor(
@@ -38,13 +41,42 @@ export class PositionsService {
       items = items.filter((item) => item.visibilityMode === 'PUBLIC');
     }
 
+    const mappedItems = await Promise.all(
+      items.map(async (item) => {
+        const mapped = this.mapPosition(item);
+
+        if (!mapped) {
+          return null;
+        }
+
+        let hasAccess = item.visibilityMode === 'PUBLIC';
+
+        if (currentUser) {
+          hasAccess =
+            isRecruiter(currentUser.roles) ||
+            isAdmin(currentUser.roles) ||
+            (await this.isPositionAccessibleToCandidate(item, currentUser.id));
+        }
+
+        return {
+          ...mapped,
+          hasAccess
+        };
+      })
+    );
+
+    console.log(
+      'POSITIONS_RESULT_SAMPLE',
+      JSON.stringify(mappedItems[0], null, 2)
+    );
+
     return {
-      items: items.map((item) => this.mapPosition(item)),
+      items: mappedItems.filter(Boolean),
       total: query.accessibleOnly || !currentUser ? items.length : result.total,
       page: pagination.page,
       pageSize: pagination.pageSize
     };
-  }
+}
 
   async getPositionById(positionId: string, currentUser?: RequestUser) {
     const position = await this.positionsRepository.findPositionById(positionId);
@@ -53,11 +85,11 @@ export class PositionsService {
       throw new NotFoundError('Position not found');
     }
 
-    if (!currentUser && position.visibilityMode !== 'PUBLIC') {
+    if (!currentUser && position.visibilityMode !== PositionVisibilityMode.PUBLIC) {
       throw new ForbiddenError('This position is not public');
     }
 
-    if (currentUser && position.visibilityMode === 'RESTRICTED') {
+    if (currentUser && position.visibilityMode === PositionVisibilityMode.RESTRICTED) {
       const canAccess =
         isRecruiter(currentUser.roles) ||
         isAdmin(currentUser.roles) ||
@@ -143,9 +175,7 @@ export class PositionsService {
 
     await this.positionsRepository.deletePosition(positionId);
 
-    return {
-      success: true
-    };
+    return { success: true };
   }
 
   async duplicatePosition(positionId: string, currentUser: RequestUser) {
@@ -253,11 +283,8 @@ export class PositionsService {
     await this.positionsRepository.replaceProjectTags(positionId, [...new Set(tagIds)]);
   }
 
-  private async filterAccessiblePositions(
-    positions: Awaited<ReturnType<PositionsRepository['findPositions']>>['items'],
-    userId: string
-  ) {
-    const accessible = [];
+  private async filterAccessiblePositions(positions: PositionListItem[], userId: string) {
+    const accessible: PositionListItem[] = [];
 
     for (const position of positions) {
       const canAccess = await this.isPositionAccessibleToCandidate(position, userId);
@@ -270,15 +297,12 @@ export class PositionsService {
     return accessible;
   }
 
-  private async isPositionAccessibleToCandidate(
-    position: Awaited<ReturnType<PositionsRepository['findPositionById']>>,
-    userId: string
-  ) {
+  private async isPositionAccessibleToCandidate(position: PositionListItem | PositionDetails, userId: string) {
     if (!position) {
       return false;
     }
 
-    if (position.visibilityMode === 'PUBLIC') {
+    if (position.visibilityMode === PositionVisibilityMode.PUBLIC) {
       return true;
     }
 
@@ -391,7 +415,7 @@ export class PositionsService {
     });
   }
 
-  private mapPosition(position: Awaited<ReturnType<PositionsRepository['findPositionById']>>) {
+  private mapPosition(position: PositionListItem | PositionDetails) {
     if (!position) {
       return null;
     }

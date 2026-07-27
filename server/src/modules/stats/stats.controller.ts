@@ -15,18 +15,24 @@ export class StatsController {
     }
   };
 
-  getLatestPositions = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getLatestPositions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await this.statsService.getLatestPositions();
+      const currentUser = req.user as RequestUser | undefined;
+      const result = await this.statsService.getLatestPositions(currentUser);
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
       next(error);
     }
   };
 
-  getMostPopularPositions = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getMostPopularPositions = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
-      const result = await this.statsService.getMostPopularPositions();
+      const currentUser = req.user as RequestUser | undefined;
+      const result = await this.statsService.getMostPopularPositions(currentUser);
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
       next(error);

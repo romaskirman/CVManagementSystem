@@ -4,6 +4,7 @@ import { NotFoundError } from '../../common/errors/NotFoundError';
 import { ValidationError } from '../../common/errors/ValidationError';
 import { RequestUser } from '../../common/types/request-user.type';
 import { getPagination } from '../../utils/pagination';
+import { isAdmin, isCandidate, isRecruiter } from '../../utils/permissions';
 import { RecentAttributesService } from '../attributes/recent-attributes.service';
 import { CvGenerationService } from './cv-generation.service';
 import { CvRepository } from './cv.repository';
@@ -16,6 +17,19 @@ import {
 } from './cv.types';
 
 type CvView = NonNullable<ReturnType<CvGenerationService['generateCvView']>>;
+type CvListItem = Awaited<ReturnType<CvRepository['listCvs']>>['items'][number];
+type CandidateProfileWithValues = NonNullable<
+  Awaited<ReturnType<CvRepository['findCandidateProfileByUserId']>>
+>;
+
+function normalizeNullableString(value?: string | null) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 export class CvService {
   constructor(
@@ -36,7 +50,12 @@ export class CvService {
       candidateUserId: query.candidateUserId
     });
 
-    const visibleItems: CvView[] = [];
+    const profile =
+      isCandidate(currentUser.roles) && !isRecruiter(currentUser.roles) && !isAdmin(currentUser.roles)
+        ? await this.cvRepository.findCandidateProfileByUserId(currentUser.id)
+        : null;
+
+    const visibleItems: Array<CvView & { hasPositionAccess: boolean }> = [];
 
     for (const cv of result.items) {
       try {
@@ -51,9 +70,18 @@ export class CvService {
 
         const cvView = this.cvGenerationService.generateCvView(cv);
 
-        if (cvView) {
-          visibleItems.push(cvView);
+        if (!cvView) {
+          continue;
         }
+
+        const hasPositionAccess = profile
+          ? this.hasCandidateAccessToPosition(cv, profile)
+          : true;
+
+        visibleItems.push({
+          ...cvView,
+          hasPositionAccess
+        });
       } catch {
         continue;
       }
@@ -136,14 +164,14 @@ export class CvService {
     const data: Prisma.ProfileAttributeValueUncheckedCreateInput = {
       profileId: cv.candidateProfileId,
       attributeId: input.attributeId,
-      stringValue: input.stringValue ?? null,
-      textValue: input.textValue ?? null,
+      stringValue: normalizeNullableString(input.stringValue),
+      textValue: normalizeNullableString(input.textValue),
       numberValue: typeof input.numberValue === 'number' ? new Prisma.Decimal(input.numberValue) : null,
       booleanValue: typeof input.booleanValue === 'boolean' ? input.booleanValue : null,
       dateValue: input.dateValue ? new Date(input.dateValue) : null,
       periodStart: input.periodStart ? new Date(input.periodStart) : null,
       periodEnd: input.periodEnd ? new Date(input.periodEnd) : null,
-      imageUrl: input.imageUrl ?? null,
+      imageUrl: normalizeNullableString(input.imageUrl),
       optionId: input.optionId ?? null
     };
 
@@ -291,5 +319,116 @@ export class CvService {
     return {
       success: true
     };
+  }
+
+  private hasCandidateAccessToPosition(
+    cv: Pick<CvListItem, 'position'>,
+    profile: CandidateProfileWithValues
+  ) {
+    if (cv.position.visibilityMode === 'PUBLIC') {
+      return true;
+    }
+
+    return cv.position.accessRules.every((rule) => {
+      const value = profile.attributeValues.find((item) => item.attributeId === rule.attributeId);
+
+      if (!value) {
+        return false;
+      }
+
+      switch (rule.operator) {
+        case 'EQUALS':
+          if (rule.optionId) {
+            return value.optionId === rule.optionId;
+          }
+          if (rule.stringValue !== null) {
+            return value.stringValue === rule.stringValue || value.textValue === rule.stringValue;
+          }
+          if (rule.numberValue !== null) {
+            return Number(value.numberValue) === Number(rule.numberValue);
+          }
+          if (typeof rule.booleanValue === 'boolean') {
+            return value.booleanValue === rule.booleanValue;
+          }
+          if (rule.dateValue) {
+            return value.dateValue?.toISOString() === rule.dateValue.toISOString();
+          }
+          return false;
+
+        case 'NOT_EQUALS':
+          if (rule.optionId) {
+            return value.optionId !== rule.optionId;
+          }
+          if (rule.stringValue !== null) {
+            return value.stringValue !== rule.stringValue && value.textValue !== rule.stringValue;
+          }
+          if (rule.numberValue !== null) {
+            return Number(value.numberValue) !== Number(rule.numberValue);
+          }
+          if (typeof rule.booleanValue === 'boolean') {
+            return value.booleanValue !== rule.booleanValue;
+          }
+          return true;
+
+        case 'CONTAINS':
+          return Boolean(
+            value.stringValue?.toLowerCase().includes((rule.stringValue ?? '').toLowerCase()) ||
+              value.textValue?.toLowerCase().includes((rule.stringValue ?? '').toLowerCase())
+          );
+
+        case 'STARTS_WITH':
+          return Boolean(
+            value.stringValue?.toLowerCase().startsWith((rule.stringValue ?? '').toLowerCase()) ||
+              value.textValue?.toLowerCase().startsWith((rule.stringValue ?? '').toLowerCase())
+          );
+
+        case 'GREATER_THAN':
+          return Number(value.numberValue) > Number(rule.numberValue);
+
+        case 'GREATER_THAN_OR_EQUAL':
+          return Number(value.numberValue) >= Number(rule.numberValue);
+
+        case 'LESS_THAN':
+          return Number(value.numberValue) < Number(rule.numberValue);
+
+        case 'LESS_THAN_OR_EQUAL':
+          return Number(value.numberValue) <= Number(rule.numberValue);
+
+        case 'IS_TRUE':
+          return value.booleanValue === true;
+
+        case 'IS_FALSE':
+          return value.booleanValue === false;
+
+        case 'BEFORE':
+          return Boolean(value.dateValue && rule.dateValue && value.dateValue < rule.dateValue);
+
+        case 'AFTER':
+          return Boolean(value.dateValue && rule.dateValue && value.dateValue > rule.dateValue);
+
+        case 'ON':
+          return Boolean(
+            value.dateValue &&
+              rule.dateValue &&
+              value.dateValue.toISOString().slice(0, 10) === rule.dateValue.toISOString().slice(0, 10)
+          );
+
+        case 'OVERLAPS':
+          return Boolean(
+            value.periodStart &&
+              value.periodEnd &&
+              rule.dateValue &&
+              rule.secondDateValue &&
+              value.periodStart <= rule.secondDateValue &&
+              value.periodEnd >= rule.dateValue
+          );
+
+        case 'IN_SET':
+          return Boolean(rule.optionId && value.optionId === rule.optionId);
+
+        default:
+          return false;
+      }
+    });
   }
 }

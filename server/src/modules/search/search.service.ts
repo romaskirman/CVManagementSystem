@@ -1,12 +1,20 @@
 import { ForbiddenError } from '../../common/errors/ForbiddenError';
 import { RequestUser } from '../../common/types/request-user.type';
 import { getPagination } from '../../utils/pagination';
-import { isAdmin, isRecruiter } from '../../utils/permissions';
+import { isAdmin, isCandidate, isRecruiter } from '../../utils/permissions';
+import { PositionAccessRulesService } from '../positions/position-access-rules.service';
+import { PositionsRepository } from '../positions/positions.repository';
 import { GlobalSearchQuery } from './search.types';
 import { SearchRepository } from './search.repository';
 
+type SearchPositionItem = Awaited<ReturnType<SearchRepository['searchPositions']>>['items'][number];
+
 export class SearchService {
-  constructor(private readonly searchRepository: SearchRepository) {}
+  constructor(
+    private readonly searchRepository: SearchRepository,
+    private readonly positionsRepository = new PositionsRepository(),
+    private readonly positionAccessRulesService = new PositionAccessRulesService()
+  ) {}
 
   async globalSearch(query: GlobalSearchQuery, currentUser?: RequestUser) {
     const pagination = getPagination(query);
@@ -38,9 +46,14 @@ export class SearchService {
       });
 
       let items = result.items;
+      let total = result.total;
 
       if (!currentUser) {
         items = items.filter((item) => item.visibilityMode === 'PUBLIC');
+        total = items.length;
+      } else if (isCandidate(currentUser.roles) && !isRecruiter(currentUser.roles) && !isAdmin(currentUser.roles)) {
+        items = await this.filterAccessiblePositions(items, currentUser.id);
+        total = items.length;
       }
 
       response.positions = {
@@ -55,7 +68,7 @@ export class SearchService {
           updatedAt: item.updatedAt,
           rank: item.rank
         })),
-        total: !currentUser ? items.length : result.total,
+        total,
         page: pagination.page,
         pageSize: pagination.pageSize
       };
@@ -121,5 +134,136 @@ export class SearchService {
     }
 
     return response;
+  }
+
+  private async filterAccessiblePositions(items: SearchPositionItem[], userId: string) {
+    const profile = await this.positionsRepository.findProfileByUserId(userId);
+
+    if (!profile) {
+      return items.filter((item) => item.visibilityMode === 'PUBLIC');
+    }
+
+    const accessible: SearchPositionItem[] = [];
+
+    for (const item of items) {
+      if (item.visibilityMode === 'PUBLIC') {
+        accessible.push(item);
+        continue;
+      }
+
+      const position = await this.positionsRepository.findPositionById(item.id);
+
+      if (!position) {
+        continue;
+      }
+
+      const canAccess = position.accessRules.every((rule) => {
+        const value = profile.attributeValues.find((attributeValue) => attributeValue.attributeId === rule.attributeId);
+
+        if (!value) {
+          return false;
+        }
+
+        switch (rule.operator) {
+          case 'EQUALS':
+            if (rule.optionId) {
+              return value.optionId === rule.optionId;
+            }
+            if (rule.stringValue !== null) {
+              return value.stringValue === rule.stringValue || value.textValue === rule.stringValue;
+            }
+            if (rule.numberValue !== null) {
+              return Number(value.numberValue) === Number(rule.numberValue);
+            }
+            if (typeof rule.booleanValue === 'boolean') {
+              return value.booleanValue === rule.booleanValue;
+            }
+            if (rule.dateValue) {
+              return value.dateValue?.toISOString() === rule.dateValue.toISOString();
+            }
+            return false;
+
+          case 'NOT_EQUALS':
+            if (rule.optionId) {
+              return value.optionId !== rule.optionId;
+            }
+            if (rule.stringValue !== null) {
+              return value.stringValue !== rule.stringValue && value.textValue !== rule.stringValue;
+            }
+            if (rule.numberValue !== null) {
+              return Number(value.numberValue) !== Number(rule.numberValue);
+            }
+            if (typeof rule.booleanValue === 'boolean') {
+              return value.booleanValue !== rule.booleanValue;
+            }
+            return true;
+
+          case 'CONTAINS':
+            return Boolean(
+              value.stringValue?.toLowerCase().includes((rule.stringValue ?? '').toLowerCase()) ||
+                value.textValue?.toLowerCase().includes((rule.stringValue ?? '').toLowerCase())
+            );
+
+          case 'STARTS_WITH':
+            return Boolean(
+              value.stringValue?.toLowerCase().startsWith((rule.stringValue ?? '').toLowerCase()) ||
+                value.textValue?.toLowerCase().startsWith((rule.stringValue ?? '').toLowerCase())
+            );
+
+          case 'GREATER_THAN':
+            return Number(value.numberValue) > Number(rule.numberValue);
+
+          case 'GREATER_THAN_OR_EQUAL':
+            return Number(value.numberValue) >= Number(rule.numberValue);
+
+          case 'LESS_THAN':
+            return Number(value.numberValue) < Number(rule.numberValue);
+
+          case 'LESS_THAN_OR_EQUAL':
+            return Number(value.numberValue) <= Number(rule.numberValue);
+
+          case 'IS_TRUE':
+            return value.booleanValue === true;
+
+          case 'IS_FALSE':
+            return value.booleanValue === false;
+
+          case 'BEFORE':
+            return Boolean(value.dateValue && rule.dateValue && value.dateValue < rule.dateValue);
+
+          case 'AFTER':
+            return Boolean(value.dateValue && rule.dateValue && value.dateValue > rule.dateValue);
+
+          case 'ON':
+            return Boolean(
+              value.dateValue &&
+                rule.dateValue &&
+                value.dateValue.toISOString().slice(0, 10) === rule.dateValue.toISOString().slice(0, 10)
+            );
+
+          case 'OVERLAPS':
+            return Boolean(
+              value.periodStart &&
+                value.periodEnd &&
+                rule.dateValue &&
+                rule.secondDateValue &&
+                value.periodStart <= rule.secondDateValue &&
+                value.periodEnd >= rule.dateValue
+            );
+
+          case 'IN_SET':
+            return Boolean(rule.optionId && value.optionId === rule.optionId);
+
+          default:
+            return false;
+        }
+      });
+
+      if (canAccess) {
+        accessible.push(item);
+      }
+    }
+
+    return accessible;
   }
 }

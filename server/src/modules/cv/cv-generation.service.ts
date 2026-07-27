@@ -4,6 +4,10 @@ import { CvRepository } from './cv.repository';
 type CvDetails = Awaited<ReturnType<CvRepository['findCvById']>>;
 type CvListItem = Awaited<ReturnType<CvRepository['listCvs']>>['items'][number];
 
+function isBlankString(value?: string | null) {
+  return value === null || value === undefined || value.trim().length === 0;
+}
+
 export class CvGenerationService {
   constructor(private readonly cvRepository: CvRepository) {}
 
@@ -23,14 +27,14 @@ export class CvGenerationService {
       const isEmpty =
         !value ||
         (
-          value.stringValue === null &&
-          value.textValue === null &&
+          isBlankString(value.stringValue) &&
+          isBlankString(value.textValue) &&
           value.numberValue === null &&
           value.booleanValue === null &&
           value.dateValue === null &&
           value.periodStart === null &&
           value.periodEnd === null &&
-          value.imageUrl === null &&
+          isBlankString(value.imageUrl) &&
           value.optionId === null
         );
 

@@ -28,6 +28,7 @@ export class DiscussionsService {
         author: {
           id: post.author.id,
           email: post.author.email,
+          roles: post.author.roles.map((item) => item.role.code),
           profileUrl:
             isRecruiter(currentUser.roles) || isAdmin(currentUser.roles)
               ? `/profile/${post.author.id}`
@@ -62,7 +63,12 @@ export class DiscussionsService {
       positionId: post.positionId,
       author: {
         id: post.author.id,
-        email: post.author.email
+        email: post.author.email,
+        roles: post.author.roles.map((item) => item.role.code),
+        profileUrl:
+          isRecruiter(currentUser.roles) || isAdmin(currentUser.roles)
+            ? `/profile/${post.author.id}`
+            : null
       },
       bodyMarkdown: post.bodyMarkdown,
       createdAt: post.createdAt

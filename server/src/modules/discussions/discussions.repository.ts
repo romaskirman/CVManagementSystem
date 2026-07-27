@@ -19,7 +19,15 @@ export class DiscussionsRepository {
         bodyMarkdown: params.bodyMarkdown
       },
       include: {
-        author: true
+        author: {
+          include: {
+            roles: {
+              include: {
+                role: true
+              }
+            }
+          }
+        }
       }
     });
   }
@@ -31,7 +39,15 @@ export class DiscussionsRepository {
       prisma.positionDiscussionPost.findMany({
         where,
         include: {
-          author: true
+          author: {
+            include: {
+              roles: {
+                include: {
+                  role: true
+                }
+              }
+            }
+          }
         },
         orderBy: {
           createdAt: 'asc'

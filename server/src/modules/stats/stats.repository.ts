@@ -60,7 +60,8 @@ export class StatsRepository {
       },
       take: limit,
       include: {
-        cvs: true
+        cvs: true,
+        accessRules: true
       }
     });
   }
@@ -70,6 +71,7 @@ export class StatsRepository {
       take: limit,
       include: {
         cvs: true,
+        accessRules: true,
         projectTags: {
           include: {
             tag: true
@@ -80,6 +82,20 @@ export class StatsRepository {
     });
   }
 
+  async findProfileByUserId(userId: string) {
+    return prisma.candidateProfile.findUnique({
+      where: { userId },
+      include: {
+        attributeValues: {
+          include: {
+            attribute: true,
+            option: true
+          }
+        }
+      }
+    });
+  }
+
   async getPositionTagCloud() {
     const tags = await prisma.positionProjectTag.findMany({
       include: {
@@ -87,7 +103,7 @@ export class StatsRepository {
       }
     });
 
-    const counts = new Map();
+    const counts = new Map<string, { id: string; name: string; count: number }>();
 
     for (const row of tags) {
       const existing = counts.get(row.tagId);
@@ -113,7 +129,7 @@ export class StatsRepository {
       }
     });
 
-    const counts = new Map();
+    const counts = new Map<string, { id: string; name: string; count: number }>();
 
     for (const row of tags) {
       const existing = counts.get(row.tagId);
