@@ -35,7 +35,7 @@ export function AttributesFiltersBar({
   };
 
   return (
-    <form className="filters-bar" onSubmit={handleSubmit}>
+    <form className="filters-bar attributes-filters-form" onSubmit={handleSubmit}>
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}

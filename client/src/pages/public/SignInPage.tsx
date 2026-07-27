@@ -15,12 +15,14 @@ type LocationState = {
 export function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { refetchMe, isAuthenticated, isLoading } = useAuth();
+  const { refetchMe, isAuthenticated, isAuthorized, isLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const oauthError = new URLSearchParams(location.search).get('oauthError');
 
   const redirectTo = useMemo(() => {
     const state = location.state as LocationState | null;
@@ -33,8 +35,12 @@ export function SignInPage() {
     return `${from.pathname}${from.search ?? ''}${from.hash ?? ''}`;
   }, [location.state]);
 
-  if (!isLoading && isAuthenticated) {
+  if (!isLoading && isAuthenticated && isAuthorized) {
     return <Navigate to={redirectTo} replace />;
+  }
+
+  if (!isLoading && isAuthenticated && !isAuthorized) {
+    return <Navigate to="/verify-email" replace />;
   }
 
   const onSubmit = async (e: FormEvent) => {
@@ -48,13 +54,19 @@ export function SignInPage() {
         password
       });
 
-      await refetchMe();
+      const me = await refetchMe();
+
+      if (me && !me.isAuthorized) {
+        navigate('/verify-email', { replace: true });
+        return;
+      }
+
       navigate(redirectTo, { replace: true });
     } catch (error: any) {
       setErrorMessage(
         error?.response?.data?.message ??
           error?.response?.data?.error ??
-          'Failed to sign in.' //TODO 
+          'Failed to sign in.'
       );
     } finally {
       setIsSubmitting(false);
@@ -66,6 +78,10 @@ export function SignInPage() {
       <div className="card-block" style={{ maxWidth: 480 }}>
         <h1>Sign in</h1>
         <p>Use your account credentials to continue.</p>
+
+        {oauthError ? (
+          <div className="form-error">OAuth sign-in failed. Please try again.</div>
+        ) : null}
 
         <form onSubmit={onSubmit} className="form-stack">
           <label>
@@ -98,6 +114,15 @@ export function SignInPage() {
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        <div className="form-stack" style={{ marginTop: 16 }}>
+          <button type="button" onClick={() => authApi.startGoogleOAuth()}>
+            Continue with Google
+          </button>
+          <button type="button" onClick={() => authApi.startGithubOAuth()}>
+            Continue with GitHub
+          </button>
+        </div>
 
         <p style={{ marginTop: 16 }}>
           Don&apos;t have an account? <Link to="/register">Create one</Link>

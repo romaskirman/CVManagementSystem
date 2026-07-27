@@ -1,34 +1,37 @@
-import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
-import { authApi } from '../../shared/api/auth.api';
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
+import { authApi, AuthUser } from '../../shared/api/auth.api';
 import * as React from 'react';
 
-type AuthUser = {
-  id: string;
-  email: string;
-  roles: string[];
-  isBlocked?: boolean;
-} | null;
-
 type AuthContextValue = {
-  user: AuthUser;
+  user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAuthorized: boolean;
   signOut: () => Promise<void>;
-  refetchMe: () => Promise<void>;
+  refetchMe: () => Promise<AuthUser | null>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [user, setUser] = useState<AuthUser>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const refetchMe = async () => {
+  const refetchMe = async (): Promise<AuthUser | null> => {
     try {
       const me = await authApi.me();
       setUser(me);
+      return me;
     } catch {
       setUser(null);
+      return null;
     }
   };
 
@@ -49,6 +52,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       user,
       isLoading,
       isAuthenticated: Boolean(user),
+      isAuthorized: Boolean(user?.isAuthorized),
       signOut,
       refetchMe
     }),

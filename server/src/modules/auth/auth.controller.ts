@@ -12,8 +12,7 @@ export class AuthController {
 
       req.login(user as Express.User, (error) => {
         if (error) {
-          next(error);
-          return;
+          return next(error);
         }
 
         res.status(StatusCodes.CREATED).json({
@@ -31,8 +30,7 @@ export class AuthController {
 
       req.login(user as Express.User, (error) => {
         if (error) {
-          next(error);
-          return;
+          return next(error);
         }
 
         res.status(StatusCodes.OK).json({
@@ -44,20 +42,65 @@ export class AuthController {
     }
   };
 
+  verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(StatusCodes.UNAUTHORIZED).json({
+          message: 'Authentication required'
+        });
+        return;
+      }
+
+      const requestUser = req.user as RequestUser;
+      const user = await this.authService.verifyEmail(requestUser.id, req.body);
+
+      req.login(user as Express.User, (error) => {
+        if (error) {
+          return next(error);
+        }
+
+        res.status(StatusCodes.OK).json({
+          user
+        });
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resendVerificationCode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const requestUser = req.user as RequestUser | undefined;
+
+      await this.authService.resendVerificationCode({
+        currentUserId: requestUser?.id,
+        email: req.body?.email
+      });
+
+      res.status(StatusCodes.OK).json({
+        success: true
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   logout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     req.logout((error) => {
       if (error) {
-        next(error);
-        return;
+        return next(error);
       }
 
       req.session.destroy((sessionError) => {
         if (sessionError) {
-          next(sessionError);
-          return;
+          return next(sessionError);
         }
 
-        res.clearCookie('cvms.sid');
+        res.clearCookie(process.env.SESSION_NAME ?? 'cvms.sid');
         res.status(StatusCodes.OK).json({
           success: true
         });
@@ -90,6 +133,6 @@ export class AuthController {
   };
 
   oauthFailure = async (_req: Request, res: Response): Promise<void> => {
-    res.redirect(`${process.env.CLIENT_URL ?? 'http://localhost:5173'}/login?oauthError=1`);
+    res.redirect(`${process.env.CLIENT_URL ?? 'http://localhost:5173'}/signin?oauthError=1`);
   };
 }

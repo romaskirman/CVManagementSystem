@@ -49,6 +49,7 @@ async function resolveUserFromToken(token: string): Promise<Express.User | null>
     id: user.id,
     email: user.email,
     isBlocked: user.isBlocked,
+    isAuthorized: user.isAuthorized,
     roles: user.roles.map((item) => item.role.code)
   } as Express.User;
 }
@@ -83,6 +84,26 @@ export const requireAuth: RequestHandler = async (
   } catch {
     res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid or expired token' });
   }
+};
+
+export const requireAuthorized: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authentication required' });
+    return;
+  }
+
+  const user = req.user as Express.User & { isAuthorized?: boolean };
+
+  if (!user.isAuthorized) {
+    res.status(StatusCodes.FORBIDDEN).json({ message: 'Email confirmation required' });
+    return;
+  }
+
+  next();
 };
 
 export const optionalAuth: RequestHandler = async (

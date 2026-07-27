@@ -65,11 +65,6 @@ export class PositionsService {
       })
     );
 
-    console.log(
-      'POSITIONS_RESULT_SAMPLE',
-      JSON.stringify(mappedItems[0], null, 2)
-    );
-
     return {
       items: mappedItems.filter(Boolean),
       total: query.accessibleOnly || !currentUser ? items.length : result.total,

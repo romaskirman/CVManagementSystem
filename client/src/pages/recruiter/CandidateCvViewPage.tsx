@@ -33,7 +33,7 @@ export function CandidateCvViewPage() {
         </p>
       </div>
 
-      <div className="inline-actions">
+      <div className="inline-actions view-candidate-cv-likes">
         <CvLikeButton cvId={typedCv.id} initialLikesCount={typedCv.likesCount} />
       </div>
 

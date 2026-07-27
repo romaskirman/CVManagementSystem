@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -84,27 +85,30 @@ enum CvStatus {
 enum AuthProvider {
   LOCAL
   GOOGLE
-  FACEBOOK
+  GITHUB
 }
 
 model User {
-  id                    String                   @id @default(cuid())
-  email                 String                   @unique
-  passwordHash          String?
-  isBlocked             Boolean                  @default(false)
-  createdAt             DateTime                 @default(now())
-  updatedAt             DateTime                 @updatedAt
+  id                     String                   @id @default(cuid())
+  email                  String                   @unique
+  passwordHash           String?
+  isBlocked              Boolean                  @default(false)
+  isAuthorized           Boolean                  @default(false)
+  authorizedAt           DateTime?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
 
-  roles                 UserRole[]
-  oauthAccounts         OAuthAccount[]
-  preference            UserPreference?
-  candidateProfile      CandidateProfile?
-  createdAttributes     AttributeDefinition[]    @relation("AttributeCreatedBy")
-  createdPositions      Position[]               @relation("PositionCreatedBy")
-  updatedPositions      Position[]               @relation("PositionUpdatedBy")
-  discussionPosts       PositionDiscussionPost[]
-  cvLikes               CvLike[]
-  recentAttributeUsages RecentAttributeUsage[]
+  roles                  UserRole[]
+  oauthAccounts          OAuthAccount[]
+  emailVerificationCodes EmailVerificationCode[]
+  preference             UserPreference?
+  candidateProfile       CandidateProfile?
+  createdAttributes      AttributeDefinition[]    @relation("AttributeCreatedBy")
+  createdPositions       Position[]               @relation("PositionCreatedBy")
+  updatedPositions       Position[]               @relation("PositionUpdatedBy")
+  discussionPosts        PositionDiscussionPost[]
+  cvLikes                CvLike[]
+  recentAttributeUsages  RecentAttributeUsage[]
 }
 
 model Role {
@@ -139,6 +143,20 @@ model OAuthAccount {
 
   @@unique([provider, providerUserId])
   @@index([userId])
+}
+
+model EmailVerificationCode {
+  id         String   @id @default(cuid())
+  userId     String
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
 }
 
 model UserPreference {

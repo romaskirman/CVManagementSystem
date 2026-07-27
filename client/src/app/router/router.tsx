@@ -5,6 +5,8 @@ import { PositionsPage } from '../../pages/public/PositionsPage';
 import { PositionDetailsPage } from '../../pages/public/PositionDetailsPage';
 import { SignInPage } from '../../pages/public/SignInPage';
 import { RegisterPage } from '../../pages/public/RegisterPage';
+import { VerifyEmailPage } from '../../pages/public/VerifyEmailPage';
+import { OAuthCallbackPage } from '../../pages/public/OAuthCallbackPage';
 import { SearchResultsPage } from '../../pages/common/SearchResultsPage';
 import { NotFoundPage } from '../../pages/common/NotFoundPage';
 import { AuthGuard } from './guards/AuthGuard';
@@ -33,6 +35,8 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'signin', element: <SignInPage /> },
       { path: 'register', element: <RegisterPage /> },
+      { path: 'verify-email', element: <VerifyEmailPage /> },
+      { path: 'auth/callback', element: <OAuthCallbackPage /> },
       { path: 'positions', element: <PositionsPage /> },
       { path: 'positions/:positionId', element: <PositionDetailsPage /> },
       { path: 'search', element: <SearchResultsPage /> },

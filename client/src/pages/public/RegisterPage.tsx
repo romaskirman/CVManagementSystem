@@ -1,18 +1,26 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { authApi } from '../../shared/api/auth.api';
 import { useAuth } from '../../app/providers/AuthProvider';
 import * as React from 'react';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { refetchMe } = useAuth();
+  const { refetchMe, isAuthenticated, isAuthorized, isLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isLoading && isAuthenticated && isAuthorized) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!isLoading && isAuthenticated && !isAuthorized) {
+    return <Navigate to="/verify-email" replace />;
+  }
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -31,7 +39,13 @@ export function RegisterPage() {
         password
       });
 
-      await refetchMe();
+      const me = await refetchMe();
+
+      if (me && !me.isAuthorized) {
+        navigate('/verify-email', { replace: true });
+        return;
+      }
+
       navigate('/', { replace: true });
     } catch (error: any) {
       setErrorMessage(

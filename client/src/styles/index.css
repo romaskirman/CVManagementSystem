@@ -1678,6 +1678,14 @@ a {
   font-size: 0.875rem;
 }
 
+.view-candidate-cv-likes {
+    margin-bottom: 24px;
+}
+
+.attributes-filters-form {
+    margin-top: 24px;
+}
+
 @media (max-width: 900px) {
   .app-shell__body {
     flex-direction: column;

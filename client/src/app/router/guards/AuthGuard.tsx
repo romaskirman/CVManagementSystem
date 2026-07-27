@@ -3,7 +3,7 @@ import { useAuth } from '../../providers/AuthProvider';
 import * as React from 'react';
 
 export function AuthGuard() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isAuthorized, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -12,6 +12,10 @@ export function AuthGuard() {
 
   if (!isAuthenticated) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
+  }
+
+  if (!isAuthorized) {
+    return <Navigate to="/verify-email" replace />;
   }
 
   return <Outlet />;
