@@ -9,16 +9,6 @@ export class AuthRepository {
           include: {
             role: true
           }
-        },
-        preference: true,
-        candidateProfile: true,
-        emailVerificationCodes: {
-          where: {
-            consumedAt: null
-          },
-          orderBy: {
-            createdAt: 'desc'
-          }
         }
       }
     });

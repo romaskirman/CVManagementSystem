@@ -14,13 +14,15 @@ import {
 } from './auth.types';
 import { VerificationCodeService } from './verification-code.service';
 
-function mapSessionUser(user: {
+type SessionUserRecord = {
   id: string;
   email: string;
   isBlocked: boolean;
   isAuthorized: boolean;
   roles: Array<{ role: { code: string } }>;
-}): SessionUserDto {
+};
+
+function mapSessionUser(user: SessionUserRecord): SessionUserDto {
   return {
     id: user.id,
     email: user.email,
@@ -193,7 +195,7 @@ export class AuthService {
       email: input.email ?? null
     });
 
-    let user = null;
+    let user: Awaited<ReturnType<AuthRepository['findSessionUserById']>> | null = null;
 
     if (input.currentUserId) {
       user = await this.authRepository.findSessionUserById(input.currentUserId);

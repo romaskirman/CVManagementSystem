@@ -5,6 +5,7 @@ import {
   VerifyCallback as GoogleVerifyCallback
 } from 'passport-google-oauth20';
 import { Strategy as GitHubStrategy, Profile as GitHubProfile } from 'passport-github2';
+import { AuthProvider } from '@prisma/client';
 import { prisma } from './db';
 import { env } from './env';
 
@@ -39,7 +40,7 @@ async function buildSessionUser(userId: string): Promise<SessionUser | null> {
     email: user.email,
     isBlocked: user.isBlocked,
     isAuthorized: user.isAuthorized,
-    roles: user.roles.map((item: { role: { code: string } }) => item.role.code)
+    roles: user.roles.map((item) => item.role.code)
   };
 }
 
@@ -62,7 +63,7 @@ passport.deserializeUser(async (userId: string, done: PassportDone) => {
   }
 });
 
-async function ensureDefaultCandidateRole(userId: string) {
+async function ensureDefaultCandidateRole(userId: string): Promise<void> {
   const role = await prisma.role.findFirst({
     where: { code: 'CANDIDATE' }
   });
@@ -86,7 +87,7 @@ async function ensureDefaultCandidateRole(userId: string) {
   });
 }
 
-async function ensurePreferenceAndProfile(userId: string) {
+async function ensurePreferenceAndProfile(userId: string): Promise<void> {
   await prisma.userPreference.upsert({
     where: { userId },
     update: {},
@@ -106,33 +107,32 @@ async function ensurePreferenceAndProfile(userId: string) {
 
 async function findOrCreateOAuthUser(params: {
   email: string;
-  provider: 'GOOGLE' | 'GITHUB';
+  provider: AuthProvider;
   providerUserId: string;
 }): Promise<SessionUser> {
+  const normalizedEmail = params.email.trim().toLowerCase();
+
   const existingOauth = await prisma.oAuthAccount.findUnique({
     where: {
       provider_providerUserId: {
         provider: params.provider,
         providerUserId: params.providerUserId
       }
-    },
-    include: {
-      user: {
-        include: {
-          roles: {
-            include: {
-              role: true
-            }
-          }
-        }
-      }
     }
   });
 
   if (existingOauth) {
-    if (!existingOauth.user.isAuthorized) {
+    const oauthUser = await prisma.user.findUnique({
+      where: { id: existingOauth.userId }
+    });
+
+    if (!oauthUser) {
+      throw new Error('OAuth account is linked to a missing user');
+    }
+
+    if (!oauthUser.isAuthorized) {
       await prisma.user.update({
-        where: { id: existingOauth.user.id },
+        where: { id: oauthUser.id },
         data: {
           isAuthorized: true,
           authorizedAt: new Date()
@@ -140,7 +140,7 @@ async function findOrCreateOAuthUser(params: {
       });
     }
 
-    const built = await buildSessionUser(existingOauth.user.id);
+    const built = await buildSessionUser(oauthUser.id);
 
     if (!built) {
       throw new Error('Failed to build session user for existing OAuth user');
@@ -150,14 +150,14 @@ async function findOrCreateOAuthUser(params: {
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: { email: params.email }
+    where: { email: normalizedEmail }
   });
 
   const user =
     existingUser ??
     (await prisma.user.create({
       data: {
-        email: params.email,
+        email: normalizedEmail,
         isAuthorized: true,
         authorizedAt: new Date()
       }
@@ -227,7 +227,7 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CALLBACK_URL)
 
           const user = await findOrCreateOAuthUser({
             email,
-            provider: 'GOOGLE',
+            provider: AuthProvider.GOOGLE,
             providerUserId: profile.id
           });
 
@@ -265,7 +265,7 @@ if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET && env.GITHUB_CALLBACK_URL)
 
           const user = await findOrCreateOAuthUser({
             email: primaryEmail,
-            provider: 'GITHUB',
+            provider: AuthProvider.GITHUB,
             providerUserId: profile.id
           });
 
