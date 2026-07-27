@@ -45,11 +45,18 @@ async function resolveUserFromToken(token: string): Promise<Express.User | null>
     return null;
   }
 
+  const authorizationRows = await prisma.$queryRaw<Array<{ isAuthorized: boolean | null }>>`
+    SELECT "isAuthorized"
+    FROM "User"
+    WHERE "id" = ${user.id}
+    LIMIT 1
+  `;
+
   return {
     id: user.id,
     email: user.email,
     isBlocked: user.isBlocked,
-    isAuthorized: true,
+    isAuthorized: authorizationRows[0]?.isAuthorized ?? false,
     roles: user.roles.map((item) => item.role.code)
   } as Express.User;
 }

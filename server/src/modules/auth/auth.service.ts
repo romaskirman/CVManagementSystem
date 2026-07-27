@@ -27,7 +27,7 @@ function mapSessionUser(user: SessionUserRecord): SessionUserDto {
     id: user.id,
     email: user.email,
     isBlocked: user.isBlocked,
-    isAuthorized: user.isAuthorized ?? true,
+    isAuthorized: user.isAuthorized ?? false,
     roles: (user.roles ?? []).map((item) => item.role.code)
   };
 }
@@ -60,7 +60,7 @@ export class AuthService {
       console.log('[AuthService.register] user created', {
         userId: user.id,
         email: user.email,
-        isAuthorized: true
+        isAuthorized: user.isAuthorized ?? false
       });
 
       await this.issueVerificationCode(user.id, user.email);
@@ -113,13 +113,18 @@ export class AuthService {
       throw new AuthError('User is blocked');
     }
 
+    const isAuthorized = user.isAuthorized ?? false;
+
     console.log('[AuthService.login] success', {
       userId: user.id,
       email: user.email,
-      isAuthorized: true
+      isAuthorized
     });
 
-    return mapSessionUser(user);
+    return mapSessionUser({
+      ...user,
+      isAuthorized
+    });
   }
 
   async verifyEmail(userId: string, input: VerifyEmailInput): Promise<SessionUserDto> {
@@ -143,7 +148,7 @@ export class AuthService {
       throw new AuthError('User is blocked');
     }
 
-    if ((user as SessionUserRecord).isAuthorized ?? false) {
+    if ((user.isAuthorized ?? false) === true) {
       console.log('[AuthService.verifyEmail] already authorized', {
         userId,
         email: user.email
@@ -228,7 +233,7 @@ export class AuthService {
       throw new AuthError('User is blocked');
     }
 
-    if ((user as SessionUserRecord).isAuthorized ?? false) {
+    if ((user.isAuthorized ?? false) === true) {
       console.log('[AuthService.resendVerificationCode] user already authorized, skip resend', {
         userId: user.id,
         email: user.email
@@ -257,7 +262,7 @@ export class AuthService {
     console.log('[AuthService.getCurrentUser] success', {
       userId,
       email: user.email,
-      isAuthorized: true
+      isAuthorized: user.isAuthorized ?? false
     });
 
     return mapSessionUser(user);

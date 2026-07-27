@@ -19,17 +19,28 @@ type SessionUser = {
 
 type PassportDone = (error: Error | null, user?: Express.User | false) => void;
 
+async function getAuthorizationState(userId: string): Promise<boolean> {
+  const rows = await prisma.$queryRaw<Array<{ isAuthorized: boolean | null }>>`
+    SELECT "isAuthorized"
+    FROM "User"
+    WHERE "id" = ${userId}
+    LIMIT 1
+  `;
+
+  return rows[0]?.isAuthorized ?? false;
+}
+
 function toSessionUser(user: {
   id: string;
   email: string;
   isBlocked: boolean;
   roles?: Array<{ role: { code: string } }>;
-}): SessionUser {
+}, isAuthorized: boolean): SessionUser {
   return {
     id: user.id,
     email: user.email,
     isBlocked: user.isBlocked,
-    isAuthorized: true,
+    isAuthorized,
     roles: user.roles?.map((item) => item.role.code) ?? []
   };
 }
@@ -50,7 +61,8 @@ async function buildSessionUser(userId: string): Promise<SessionUser | null> {
     return null;
   }
 
-  return toSessionUser(user);
+  const isAuthorized = await getAuthorizationState(user.id);
+  return toSessionUser(user, isAuthorized);
 }
 
 passport.serializeUser((user, done) => {
@@ -146,7 +158,14 @@ async function findOrCreateOAuthUser(params: {
       throw new Error('OAuth account is linked to a missing user');
     }
 
-    return toSessionUser(oauthUser);
+    await prisma.$executeRaw`
+      UPDATE "User"
+      SET "isAuthorized" = true,
+          "authorizedAt" = NOW()
+      WHERE "id" = ${oauthUser.id}
+    `;
+
+    return toSessionUser(oauthUser, true);
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -174,6 +193,13 @@ async function findOrCreateOAuthUser(params: {
         }
       }
     }));
+
+  await prisma.$executeRaw`
+    UPDATE "User"
+    SET "isAuthorized" = true,
+        "authorizedAt" = NOW()
+    WHERE "id" = ${user.id}
+  `;
 
   const existingAccount = await prisma.oAuthAccount.findFirst({
     where: {

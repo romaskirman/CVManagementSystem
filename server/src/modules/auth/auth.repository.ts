@@ -1,24 +1,28 @@
 import { prisma } from '../../config/db';
 
-type VerificationCodeRecord = {
+type SessionUserDbRow = {
+  id: string;
+  email: string;
+  isBlocked: boolean;
+  isAuthorized: boolean | null;
+};
+
+type EmailVerificationCodeRow = {
   id: string;
   userId: string;
   codeHash: string;
   expiresAt: Date;
   consumedAt: Date | null;
   createdAt: Date;
-  updatedAt?: Date;
 };
 
-const verificationCodesStore = new Map<string, VerificationCodeRecord>();
-
-function createVerificationCodeId(): string {
-  return `verification-code-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
+type RoleCodeRow = {
+  code: string;
+};
 
 export class AuthRepository {
   async findUserByEmail(email: string) {
-    return prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       include: {
         roles: {
@@ -28,6 +32,24 @@ export class AuthRepository {
         }
       }
     });
+
+    if (!user) {
+      return null;
+    }
+
+    const rows = await prisma.$queryRaw<SessionUserDbRow[]>`
+      SELECT "id", "email", "isBlocked", "isAuthorized"
+      FROM "User"
+      WHERE "id" = ${user.id}
+      LIMIT 1
+    `;
+
+    const rawUser = rows[0];
+
+    return {
+      ...user,
+      isAuthorized: rawUser?.isAuthorized ?? false
+    };
   }
 
   async findRoleByCode(code: 'CANDIDATE' | 'RECRUITER' | 'ADMIN') {
@@ -43,7 +65,7 @@ export class AuthRepository {
       throw new Error('Candidate role not found');
     }
 
-    return prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email: params.email,
         passwordHash: params.passwordHash,
@@ -70,10 +92,22 @@ export class AuthRepository {
         }
       }
     });
+
+    await prisma.$executeRaw`
+      UPDATE "User"
+      SET "isAuthorized" = false,
+          "authorizedAt" = NULL
+      WHERE "id" = ${user.id}
+    `;
+
+    return {
+      ...user,
+      isAuthorized: false
+    };
   }
 
   async findSessionUserById(userId: string) {
-    return prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
         roles: {
@@ -83,6 +117,24 @@ export class AuthRepository {
         }
       }
     });
+
+    if (!user) {
+      return null;
+    }
+
+    const rows = await prisma.$queryRaw<SessionUserDbRow[]>`
+      SELECT "id", "email", "isBlocked", "isAuthorized"
+      FROM "User"
+      WHERE "id" = ${userId}
+      LIMIT 1
+    `;
+
+    const rawUser = rows[0];
+
+    return {
+      ...user,
+      isAuthorized: rawUser?.isAuthorized ?? false
+    };
   }
 
   async createEmailVerificationCode(params: {
@@ -90,65 +142,72 @@ export class AuthRepository {
     codeHash: string;
     expiresAt: Date;
   }) {
-    const now = new Date();
+    await prisma.$executeRaw`
+      UPDATE "EmailVerificationCode"
+      SET "consumedAt" = NOW()
+      WHERE "userId" = ${params.userId}
+        AND "consumedAt" IS NULL
+    `;
 
-    for (const [id, record] of verificationCodesStore.entries()) {
-      if (record.userId === params.userId && record.consumedAt === null) {
-        verificationCodesStore.set(id, {
-          ...record,
-          consumedAt: now
-        });
-      }
-    }
+    await prisma.$executeRaw`
+      INSERT INTO "EmailVerificationCode" ("id", "userId", "codeHash", "expiresAt", "createdAt")
+      VALUES (gen_random_uuid()::text, ${params.userId}, ${params.codeHash}, ${params.expiresAt}, NOW())
+    `;
 
-    const record: VerificationCodeRecord = {
-      id: createVerificationCodeId(),
-      userId: params.userId,
-      codeHash: params.codeHash,
-      expiresAt: params.expiresAt,
-      consumedAt: null,
-      createdAt: now
-    };
+    const rows = await prisma.$queryRaw<EmailVerificationCodeRow[]>`
+      SELECT "id", "userId", "codeHash", "expiresAt", "consumedAt", "createdAt"
+      FROM "EmailVerificationCode"
+      WHERE "userId" = ${params.userId}
+        AND "consumedAt" IS NULL
+      ORDER BY "createdAt" DESC
+      LIMIT 1
+    `;
 
-    verificationCodesStore.set(record.id, record);
-
-    return record;
+    return rows[0] ?? null;
   }
 
   async findActiveEmailVerificationCodes(userId: string) {
-    const now = new Date();
-
-    return Array.from(verificationCodesStore.values())
-      .filter(
-        (record) =>
-          record.userId === userId &&
-          record.consumedAt === null &&
-          record.expiresAt > now
-      )
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return prisma.$queryRaw<EmailVerificationCodeRow[]>`
+      SELECT "id", "userId", "codeHash", "expiresAt", "consumedAt", "createdAt"
+      FROM "EmailVerificationCode"
+      WHERE "userId" = ${userId}
+        AND "consumedAt" IS NULL
+        AND "expiresAt" > NOW()
+      ORDER BY "createdAt" DESC
+    `;
   }
 
   async consumeEmailVerificationCode(codeId: string) {
-    const existing = verificationCodesStore.get(codeId);
+    await prisma.$executeRaw`
+      UPDATE "EmailVerificationCode"
+      SET "consumedAt" = NOW()
+      WHERE "id" = ${codeId}
+    `;
 
-    if (!existing) {
+    const rows = await prisma.$queryRaw<EmailVerificationCodeRow[]>`
+      SELECT "id", "userId", "codeHash", "expiresAt", "consumedAt", "createdAt"
+      FROM "EmailVerificationCode"
+      WHERE "id" = ${codeId}
+      LIMIT 1
+    `;
+
+    if (!rows[0]) {
       throw new Error('Verification code not found');
     }
 
-    const updated: VerificationCodeRecord = {
-      ...existing,
-      consumedAt: new Date()
-    };
-
-    verificationCodesStore.set(codeId, updated);
-
-    return updated;
+    return rows[0];
   }
 
   async markUserAuthorized(userId: string) {
-    return prisma.user.update({
+    await prisma.$executeRaw`
+      UPDATE "User"
+      SET "isAuthorized" = true,
+          "authorizedAt" = NOW()
+      WHERE "id" = ${userId}
+    `;
+
+    const user = await prisma.user.findUnique({
       where: { id: userId },
-      data: {},
       include: {
         roles: {
           include: {
@@ -157,5 +216,46 @@ export class AuthRepository {
         }
       }
     });
+
+    if (!user) {
+      throw new Error('User not found after authorization update');
+    }
+
+    return {
+      ...user,
+      isAuthorized: true
+    };
+  }
+
+  async getUserAuthorizationState(userId: string): Promise<boolean> {
+    const rows = await prisma.$queryRaw<Array<{ isAuthorized: boolean | null }>>`
+      SELECT "isAuthorized"
+      FROM "User"
+      WHERE "id" = ${userId}
+      LIMIT 1
+    `;
+
+    return rows[0]?.isAuthorized ?? false;
+  }
+
+  async getAuthorizationStatesByEmail(email: string): Promise<boolean[]> {
+    const rows = await prisma.$queryRaw<Array<{ isAuthorized: boolean | null }>>`
+      SELECT "isAuthorized"
+      FROM "User"
+      WHERE "email" = ${email}
+    `;
+
+    return rows.map((row) => row.isAuthorized ?? false);
+  }
+
+  async getUserRoleCodes(userId: string): Promise<string[]> {
+    const rows = await prisma.$queryRaw<RoleCodeRow[]>`
+      SELECT r."code" as "code"
+      FROM "UserRole" ur
+      JOIN "Role" r ON r."id" = ur."roleId"
+      WHERE ur."userId" = ${userId}
+    `;
+
+    return rows.map((row) => row.code);
   }
 }
