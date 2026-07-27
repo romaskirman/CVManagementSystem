@@ -49,7 +49,7 @@ async function resolveUserFromToken(token: string): Promise<Express.User | null>
     id: user.id,
     email: user.email,
     isBlocked: user.isBlocked,
-    isAuthorized: user.isAuthorized,
+    isAuthorized: true,
     roles: user.roles.map((item) => item.role.code)
   } as Express.User;
 }

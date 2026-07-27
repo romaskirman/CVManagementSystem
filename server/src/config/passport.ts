@@ -19,6 +19,21 @@ type SessionUser = {
 
 type PassportDone = (error: Error | null, user?: Express.User | false) => void;
 
+function toSessionUser(user: {
+  id: string;
+  email: string;
+  isBlocked: boolean;
+  roles?: Array<{ role: { code: string } }>;
+}): SessionUser {
+  return {
+    id: user.id,
+    email: user.email,
+    isBlocked: user.isBlocked,
+    isAuthorized: true,
+    roles: user.roles?.map((item) => item.role.code) ?? []
+  };
+}
+
 async function buildSessionUser(userId: string): Promise<SessionUser | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -35,13 +50,7 @@ async function buildSessionUser(userId: string): Promise<SessionUser | null> {
     return null;
   }
 
-  return {
-    id: user.id,
-    email: user.email,
-    isBlocked: user.isBlocked,
-    isAuthorized: user.isAuthorized,
-    roles: user.roles.map((item) => item.role.code)
-  };
+  return toSessionUser(user);
 }
 
 passport.serializeUser((user, done) => {
@@ -123,55 +132,48 @@ async function findOrCreateOAuthUser(params: {
 
   if (existingOauth) {
     const oauthUser = await prisma.user.findUnique({
-      where: { id: existingOauth.userId }
+      where: { id: existingOauth.userId },
+      include: {
+        roles: {
+          include: {
+            role: true
+          }
+        }
+      }
     });
 
     if (!oauthUser) {
       throw new Error('OAuth account is linked to a missing user');
     }
 
-    if (!oauthUser.isAuthorized) {
-      await prisma.user.update({
-        where: { id: oauthUser.id },
-        data: {
-          isAuthorized: true,
-          authorizedAt: new Date()
-        }
-      });
-    }
-
-    const built = await buildSessionUser(oauthUser.id);
-
-    if (!built) {
-      throw new Error('Failed to build session user for existing OAuth user');
-    }
-
-    return built;
+    return toSessionUser(oauthUser);
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: { email: normalizedEmail }
+    where: { email: normalizedEmail },
+    include: {
+      roles: {
+        include: {
+          role: true
+        }
+      }
+    }
   });
 
   const user =
     existingUser ??
     (await prisma.user.create({
       data: {
-        email: normalizedEmail,
-        isAuthorized: true,
-        authorizedAt: new Date()
+        email: normalizedEmail
+      },
+      include: {
+        roles: {
+          include: {
+            role: true
+          }
+        }
       }
     }));
-
-  if (existingUser && !existingUser.isAuthorized) {
-    await prisma.user.update({
-      where: { id: existingUser.id },
-      data: {
-        isAuthorized: true,
-        authorizedAt: new Date()
-      }
-    });
-  }
 
   const existingAccount = await prisma.oAuthAccount.findFirst({
     where: {
@@ -240,7 +242,12 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_CALLBACK_URL)
   );
 }
 
-if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET && env.GITHUB_CALLBACK_URL) {
+if (
+  env.GITHUB_CLIENT_ID &&
+  env.GITHUB_CLIENT_SECRET &&
+  env.GITHUB_CALLBACK_URL &&
+  'GITHUB' in AuthProvider
+) {
   passport.use(
     new GitHubStrategy(
       {
@@ -263,9 +270,13 @@ if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET && env.GITHUB_CALLBACK_URL)
             return;
           }
 
+          const githubProvider = AuthProvider[
+            'GITHUB' as keyof typeof AuthProvider
+          ] as AuthProvider;
+
           const user = await findOrCreateOAuthUser({
             email: primaryEmail,
-            provider: AuthProvider.GITHUB,
+            provider: githubProvider,
             providerUserId: profile.id
           });
 

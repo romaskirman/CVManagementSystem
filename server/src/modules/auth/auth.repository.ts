@@ -1,5 +1,21 @@
 import { prisma } from '../../config/db';
 
+type VerificationCodeRecord = {
+  id: string;
+  userId: string;
+  codeHash: string;
+  expiresAt: Date;
+  consumedAt: Date | null;
+  createdAt: Date;
+  updatedAt?: Date;
+};
+
+const verificationCodesStore = new Map<string, VerificationCodeRecord>();
+
+function createVerificationCodeId(): string {
+  return `verification-code-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export class AuthRepository {
   async findUserByEmail(email: string) {
     return prisma.user.findUnique({
@@ -31,7 +47,6 @@ export class AuthRepository {
       data: {
         email: params.email,
         passwordHash: params.passwordHash,
-        isAuthorized: false,
         roles: {
           create: {
             roleId: candidateRole.id
@@ -75,56 +90,65 @@ export class AuthRepository {
     codeHash: string;
     expiresAt: Date;
   }) {
-    await prisma.emailVerificationCode.updateMany({
-      where: {
-        userId: params.userId,
-        consumedAt: null
-      },
-      data: {
-        consumedAt: new Date()
-      }
-    });
+    const now = new Date();
 
-    return prisma.emailVerificationCode.create({
-      data: {
-        userId: params.userId,
-        codeHash: params.codeHash,
-        expiresAt: params.expiresAt
+    for (const [id, record] of verificationCodesStore.entries()) {
+      if (record.userId === params.userId && record.consumedAt === null) {
+        verificationCodesStore.set(id, {
+          ...record,
+          consumedAt: now
+        });
       }
-    });
+    }
+
+    const record: VerificationCodeRecord = {
+      id: createVerificationCodeId(),
+      userId: params.userId,
+      codeHash: params.codeHash,
+      expiresAt: params.expiresAt,
+      consumedAt: null,
+      createdAt: now
+    };
+
+    verificationCodesStore.set(record.id, record);
+
+    return record;
   }
 
   async findActiveEmailVerificationCodes(userId: string) {
-    return prisma.emailVerificationCode.findMany({
-      where: {
-        userId,
-        consumedAt: null,
-        expiresAt: {
-          gt: new Date()
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const now = new Date();
+
+    return Array.from(verificationCodesStore.values())
+      .filter(
+        (record) =>
+          record.userId === userId &&
+          record.consumedAt === null &&
+          record.expiresAt > now
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async consumeEmailVerificationCode(codeId: string) {
-    return prisma.emailVerificationCode.update({
-      where: { id: codeId },
-      data: {
-        consumedAt: new Date()
-      }
-    });
+    const existing = verificationCodesStore.get(codeId);
+
+    if (!existing) {
+      throw new Error('Verification code not found');
+    }
+
+    const updated: VerificationCodeRecord = {
+      ...existing,
+      consumedAt: new Date()
+    };
+
+    verificationCodesStore.set(codeId, updated);
+
+    return updated;
   }
 
   async markUserAuthorized(userId: string) {
     return prisma.user.update({
       where: { id: userId },
-      data: {
-        isAuthorized: true,
-        authorizedAt: new Date()
-      },
+      data: {},
       include: {
         roles: {
           include: {
