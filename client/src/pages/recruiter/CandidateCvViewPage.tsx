@@ -37,7 +37,7 @@ export function CandidateCvViewPage() {
         <CvLikeButton cvId={typedCv.id} initialLikesCount={typedCv.likesCount} />
       </div>
 
-      <section className="card-block form-section">
+      <section className="card-block form-section candidate-cv-preview-page-titles-dark">
         <h2>Built-in fields</h2>
         <div className="details-grid">
           <div><strong>First name:</strong> {typedCv.builtInFields.firstName || '—'}</div>
@@ -56,7 +56,7 @@ export function CandidateCvViewPage() {
         </div>
       </section>
 
-      <section className="card-block form-section">
+      <section className="card-block form-section candidate-cv-preview-page-titles-dark">
         <h2>Attributes</h2>
 
         <div className="stack-list">
@@ -78,7 +78,7 @@ export function CandidateCvViewPage() {
         </div>
       </section>
 
-      <section className="card-block form-section">
+      <section className="card-block form-section candidate-cv-preview-page-titles-dark">
         <h2>Projects</h2>
 
         {!typedCv.projects.length ? (
@@ -106,7 +106,7 @@ export function CandidateCvViewPage() {
       </section>
 
       {isAdmin && (
-        <section className="card-block">
+        <section className="card-block candidate-cv-preview-page-titles-dark">
           <h2>Administrator note</h2>
           <div>Administrator edit mode can be enabled here in the next iteration.</div>
         </section>

@@ -9,7 +9,7 @@ type RecentlyUsedAttributesProps = {
 export function RecentlyUsedAttributes({ items }: RecentlyUsedAttributesProps) {
   if (!items.length) {
     return (
-      <section className="card-block">
+      <section className="card-block recently-used-attributes-dark">
         <h2>Recently used</h2>
         <div>No recent attributes yet.</div>
       </section>
@@ -17,7 +17,7 @@ export function RecentlyUsedAttributes({ items }: RecentlyUsedAttributesProps) {
   }
 
   return (
-    <section className="card-block">
+    <section className="card-block recently-used-attributes-dark">
       <h2>Recently used</h2>
       <div className="tag-cloud">
         {items.map((item) => (

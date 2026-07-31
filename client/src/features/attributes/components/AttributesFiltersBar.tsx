@@ -51,7 +51,7 @@ export function AttributesFiltersBar({
         ))}
       </select>
 
-      <label className="checkbox-inline">
+      <label className="checkbox-inline recently-use-attributes-only-title-dark">
         <input
           type="checkbox"
           checked={recentlyUsedOnly}

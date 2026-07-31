@@ -22,7 +22,7 @@ export function UserRolesPanel({
 }: UserRolesPanelProps) {
   return (
     <section className="card-block form-section">
-      <div className="section-header-inline">
+      <div className="section-header-inline user-details-titles-dark">
         <h2>Roles</h2>
         {isSelf && <span className="warning-text">You are editing your own account</span>}
       </div>

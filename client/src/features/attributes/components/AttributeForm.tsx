@@ -75,7 +75,7 @@ export function AttributeForm({
 
   return (
     <form className="entity-form" onSubmit={handleSubmit}>
-      <section className="card-block form-section">
+      <section className="card-block form-section edit-attribute-title-dark">
         <h2>Attribute</h2>
 
         <div className="form-grid">
@@ -120,7 +120,7 @@ export function AttributeForm({
 
       {isDropdownType && (
         <section className="card-block form-section">
-          <div className="section-header-inline">
+          <div className="section-header-inline edit-aatribute-dropdown-options-dark">
             <h2>Dropdown options</h2>
             <button type="button" onClick={addOption}>
               Add option

@@ -74,19 +74,24 @@ export function SignInPage() {
   };
 
   return (
-    <section className="page-section">
-      <div className="card-block" style={{ maxWidth: 480 }}>
-        <h1>Sign in</h1>
-        <p>Use your account credentials to continue.</p>
+    <section className="page-section auth-page">
+      <div className="card-block auth-card">
+        <div className="auth-card__header">
+          <h1 className="auth-card__title">Sign in</h1>
+          <p className="auth-card__description">
+            Use your account credentials to continue.
+          </p>
+        </div>
 
         {oauthError ? (
-          <div className="form-error">OAuth sign-in failed. Please try again.</div>
+          <div className="auth-error">OAuth sign-in failed. Please try again.</div>
         ) : null}
 
-        <form onSubmit={onSubmit} className="form-stack">
-          <label>
-            <div>Email</div>
+        <form onSubmit={onSubmit} className="auth-form">
+          <label className="auth-form__field">
+            <span className="auth-form__label">Email</span>
             <input
+              className="auth-form__input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -96,9 +101,10 @@ export function SignInPage() {
             />
           </label>
 
-          <label>
-            <div>Password</div>
+          <label className="auth-form__field">
+            <span className="auth-form__label">Password</span>
             <input
+              className="auth-form__input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -108,24 +114,38 @@ export function SignInPage() {
             />
           </label>
 
-          {errorMessage ? <div className="form-error">{errorMessage}</div> : null}
+          {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
 
-          <button type="submit" disabled={isSubmitting}>
+          <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
-        <div className="form-stack" style={{ marginTop: 16 }}>
-          <button type="button" onClick={() => authApi.startGoogleOAuth()}>
+        <div className="auth-divider">Or continue with</div>
+
+        <div className="auth-socials">
+          <button
+            className="auth-socials__button"
+            type="button"
+            onClick={() => authApi.startGoogleOAuth()}
+          >
             Continue with Google
           </button>
-          <button type="button" onClick={() => authApi.startGithubOAuth()}>
+
+          <button
+            className="auth-socials__button"
+            type="button"
+            onClick={() => authApi.startGithubOAuth()}
+          >
             Continue with GitHub
           </button>
         </div>
 
-        <p style={{ marginTop: 16 }}>
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+        <p className="auth-footer">
+          Don&apos;t have an account?{' '}
+          <Link className="auth-footer__link" to="/register">
+            Create one
+          </Link>
         </p>
       </div>
     </section>

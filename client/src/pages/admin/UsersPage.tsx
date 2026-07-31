@@ -98,7 +98,7 @@ export function UsersPage() {
         <p>Administrators can manage blocking, roles, account access, and create users.</p>
       </div>
 
-      <section className="card-block form-section">
+      <section className="card-block form-section create-user-title-dark">
         <h2>Create user</h2>
         <form className="stack-form" onSubmit={handleCreateUserSubmit}>
           <div className="form-grid">

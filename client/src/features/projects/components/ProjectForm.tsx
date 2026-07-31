@@ -118,7 +118,7 @@ export function ProjectForm({
         )}
       </section>
 
-      <div className="form-actions">
+      <div className="form-actions save-project-button">
         <button className="btn-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving...' : 'Save project'}
         </button>

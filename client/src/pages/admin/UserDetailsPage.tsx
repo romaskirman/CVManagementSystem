@@ -162,7 +162,7 @@ export function UserDetailsPage() {
 
       {actionError ? <div className="error-text">{actionError}</div> : null}
 
-      <section className="card-block form-section">
+      <section className="card-block form-section user-details-titles-dark">
         <h2>Account</h2>
         <div className="details-grid">
           <div><strong>Email:</strong> {user.email}</div>
@@ -173,7 +173,7 @@ export function UserDetailsPage() {
         </div>
       </section>
 
-      <section className="card-block form-section">
+      <section className="card-block form-section user-details-titles-dark">
         <h2>Profile summary</h2>
         <div className="details-grid">
           <div><strong>First name:</strong> {user.profileSummary?.firstName ?? '—'}</div>
@@ -182,7 +182,7 @@ export function UserDetailsPage() {
         </div>
       </section>
 
-      <section className="card-block form-section">
+      <section className="card-block form-section user-details-titles-dark">
         <h2>Statistics</h2>
         <div className="details-grid">
           <div><strong>CVs:</strong> {user.stats?.cvsCount ?? 0}</div>

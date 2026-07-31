@@ -59,15 +59,20 @@ export function RegisterPage() {
   };
 
   return (
-    <section className="page-section">
-      <div className="card-block" style={{ maxWidth: 480 }}>
-        <h1>Register</h1>
-        <p>Create an account to manage CVs, profiles and positions.</p>
+    <section className="page-section auth-page">
+      <div className="card-block auth-card">
+        <div className="auth-card__header">
+          <h1 className="auth-card__title">Register</h1>
+          <p className="auth-card__description">
+            Create an account to manage CVs, profiles and positions.
+          </p>
+        </div>
 
-        <form onSubmit={onSubmit} className="form-stack">
-          <label>
-            <div>Email</div>
+        <form onSubmit={onSubmit} className="auth-form">
+          <label className="auth-form__field">
+            <span className="auth-form__label">Email</span>
             <input
+              className="auth-form__input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -77,9 +82,10 @@ export function RegisterPage() {
             />
           </label>
 
-          <label>
-            <div>Password</div>
+          <label className="auth-form__field">
+            <span className="auth-form__label">Password</span>
             <input
+              className="auth-form__input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -89,9 +95,10 @@ export function RegisterPage() {
             />
           </label>
 
-          <label>
-            <div>Confirm password</div>
+          <label className="auth-form__field">
+            <span className="auth-form__label">Confirm password</span>
             <input
+              className="auth-form__input"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -101,15 +108,18 @@ export function RegisterPage() {
             />
           </label>
 
-          {errorMessage ? <div className="form-error">{errorMessage}</div> : null}
+          {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
 
-          <button type="submit" disabled={isSubmitting}>
+          <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Creating account...' : 'Register'}
           </button>
         </form>
 
-        <p style={{ marginTop: 16 }}>
-          Already have an account? <Link to="/signin">Sign in</Link>
+        <p className="auth-footer">
+          Already have an account?{' '}
+          <Link className="auth-footer__link" to="/signin">
+            Sign in
+          </Link>
         </p>
       </div>
     </section>

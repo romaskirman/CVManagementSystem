@@ -74,17 +74,20 @@ export function VerifyEmailPage() {
   };
 
   return (
-    <section className="page-section">
-      <div className="card-block" style={{ maxWidth: 480 }}>
-        <h1>Verify email</h1>
-        <p>
-          Enter the verification code from your configured test mailbox.
-        </p>
+    <section className="page-section auth-page">
+      <div className="card-block auth-card verify-email-card">
+        <div className="auth-card__header">
+          <h1 className="auth-card__title">Verify email</h1>
+          <p className="auth-card__description verify-email-card__description">
+            Enter the verification code sent to your email address to finish account setup.
+          </p>
+        </div>
 
-        <form onSubmit={onSubmit} className="form-stack">
-          <label>
-            <div>Verification code</div>
+        <form onSubmit={onSubmit} className="verify-email-form">
+          <label className="verify-email-form__field">
+            <span className="verify-email-form__label">Verification code</span>
             <input
+              className="verify-email-form__input verify-email-form__input--code"
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
@@ -94,19 +97,32 @@ export function VerifyEmailPage() {
             />
           </label>
 
-          {errorMessage ? <div className="form-error">{errorMessage}</div> : null}
-          {successMessage ? <div className="form-success">{successMessage}</div> : null}
+          {errorMessage ? <div className="auth-error">{errorMessage}</div> : null}
+          {successMessage ? <div className="form-success verify-email-success">{successMessage}</div> : null}
 
-          <button type="submit" disabled={isSubmitting}>
+          <button
+            className="verify-email-form__submit"
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? 'Verifying...' : 'Verify email'}
           </button>
         </form>
 
-        <div style={{ marginTop: 16 }}>
-          <button type="button" onClick={onResend} disabled={isResending}>
-            {isResending ? 'Sending...' : 'Send code'}
+        <div className="verify-email-actions">
+          <button
+            className="verify-email-actions__button"
+            type="button"
+            onClick={onResend}
+            disabled={isResending}
+          >
+            {isResending ? 'Sending...' : 'Send code again'}
           </button>
         </div>
+
+        <p className="verify-email-note">
+          Signed in as {user?.email ?? 'your account'}.
+        </p>
       </div>
     </section>
   );

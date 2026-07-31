@@ -38,7 +38,7 @@ router.post(
   authController.resendVerificationCode
 );
 
-router.get('/oauth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/oauth/google', passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
 router.get(
   '/oauth/google/callback',
   passport.authenticate('google', {

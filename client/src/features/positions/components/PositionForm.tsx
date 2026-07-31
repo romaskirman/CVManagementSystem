@@ -147,7 +147,7 @@ export function PositionForm({
 
   return (
     <form className="entity-form" onSubmit={handleSubmit}>
-      <section className="card-block form-section">
+      <section className="card-block form-section create-edit-position-titles-dark">
         <h2>Basic information</h2>
 
         <label>
@@ -216,7 +216,7 @@ export function PositionForm({
       </section>
 
       <section className="card-block form-section">
-        <div className="section-header-inline">
+        <div className="section-header-inline create-edit-position-titles-dark">
           <h2>Attributes</h2>
           <button type="button" onClick={addAttribute}>
             Add attribute
@@ -263,7 +263,7 @@ export function PositionForm({
       </section>
 
       <section className="card-block form-section">
-        <div className="section-header-inline">
+        <div className="section-header-inline create-edit-position-titles-dark">
           <h2>Access rules</h2>
           <button type="button" onClick={addRule} disabled={visibilityMode !== 'RESTRICTED'}>
             Add rule
