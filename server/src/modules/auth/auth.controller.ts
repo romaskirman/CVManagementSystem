@@ -129,7 +129,7 @@ export class AuthController {
   };
 
   oauthSuccess = async (_req: Request, res: Response): Promise<void> => {
-    res.redirect(`${process.env.CLIENT_URL ?? 'http://localhost:5173'}/auth/callback?success=1`);
+    res.redirect(`${process.env.CLIENT_URL ?? 'http://localhost:5173'}/`);
   };
 
   oauthFailure = async (_req: Request, res: Response): Promise<void> => {
