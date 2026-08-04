@@ -48,19 +48,33 @@ export function CvLikeButton({ cvId, initialLikesCount }: CvLikeButtonProps) {
   const likedByMe = data?.likedByMe ?? false;
 
   if (!canLike) {
-    return <span className="likes-count-title-dark">Likes: {likesCount}</span>;
+    return (
+      <div className="cv-like-control">
+        <span className="cv-like-control__count">Likes: {likesCount}</span>
+      </div>
+    );
   }
 
   return (
-    <div className="inline-actions">
-      <span className="likes-count-title-dark">Likes: {likesCount}</span>
+    <div className="cv-like-control">
+      <span className="cv-like-control__count">Likes: {likesCount}</span>
 
       {likedByMe ? (
-        <button onClick={() => unlikeMutation.mutate()} disabled={unlikeMutation.isPending}>
+        <button
+          type="button"
+          className="cv-like-control__button cv-like-control__button--liked"
+          onClick={() => unlikeMutation.mutate()}
+          disabled={unlikeMutation.isPending}
+        >
           {unlikeMutation.isPending ? 'Removing...' : 'Unlike'}
         </button>
       ) : (
-        <button onClick={() => likeMutation.mutate()} disabled={likeMutation.isPending}>
+        <button
+          type="button"
+          className="cv-like-control__button"
+          onClick={() => likeMutation.mutate()}
+          disabled={likeMutation.isPending}
+        >
           {likeMutation.isPending ? 'Liking...' : 'Like'}
         </button>
       )}

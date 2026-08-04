@@ -84,20 +84,36 @@ export function CandidateCvViewPage() {
         {!typedCv.projects.length ? (
           <div>No projects selected.</div>
         ) : (
-          <div className="stack-list">
+          <div className="candidate-cv-project-list">
             {typedCv.projects.map((project) => (
-              <div key={project.id} className="inline-editor-row">
-                <div>
-                  <strong>{project.name}</strong>
-                  <div>{project.startDate ?? '—'} — {project.endDate ?? 'Present'}</div>
-                  <div className="markdown-preview">{project.descriptionMarkdown}</div>
-                  <div className="tag-cloud">
-                    {project.tags.map((tag) => (
-                      <span key={tag.name} className="tag-pill">
-                        {tag.name}
-                      </span>
-                    ))}
+              <div key={project.id} className="candidate-cv-project-card">
+                <div className="candidate-cv-project-card__header">
+                  <h3 className="candidate-cv-project-card__title">{project.name}</h3>
+                </div>
+
+                <div className="candidate-cv-project-card__meta">
+                  <div className="project-date-card">
+                    <div className="project-date-card__label">Start date</div>
+                    <div className="project-date-card__value">{project.startDate ?? '—'}</div>
                   </div>
+
+                  <div className="project-date-card">
+                    <div className="project-date-card__label">End date</div>
+                    <div className="project-date-card__value">{project.endDate ?? 'Present'}</div>
+                  </div>
+
+                  <div className="project-description-card candidate-cv-project-card__description">
+                    <div className="project-description-card__label">Description</div>
+                    <div className="markdown-preview">{project.descriptionMarkdown}</div>
+                  </div>
+                </div>
+
+                <div className="candidate-cv-project-card__tags">
+                  {project.tags.map((tag) => (
+                    <span key={tag.name} className="tag-pill">
+                      {tag.name}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}

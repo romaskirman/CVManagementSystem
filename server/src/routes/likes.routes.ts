@@ -44,7 +44,8 @@ const likesController = new LikesController(likesService);
 
 router.use(requireAuth, rejectBlockedUsers);
 
-router.post('/cv/:cvId/like', likesController.likeCv);
-router.delete('/cv/:cvId/like', likesController.unlikeCv);
+router.get('/cv/:cvId', likesController.getCvLikeState);
+router.post('/cv/:cvId', likesController.likeCv);
+router.delete('/cv/:cvId', likesController.unlikeCv);
 
 export const likesRouter = router;

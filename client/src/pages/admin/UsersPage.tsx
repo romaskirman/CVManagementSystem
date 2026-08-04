@@ -100,59 +100,75 @@ export function UsersPage() {
 
       <section className="card-block form-section create-user-title-dark">
         <h2>Create user</h2>
-        <form className="stack-form" onSubmit={handleCreateUserSubmit}>
-          <div className="form-grid">
-            <label className="form-field">
-              <span>Email</span>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                placeholder="user@example.com"
-                autoComplete="off"
-                required
-              />
+        <form className="create-user-form" onSubmit={handleCreateUserSubmit}>
+          <div className="create-user-form__grid">
+            <label className="create-user-form__field">
+              <span className="create-user-form__label">Email</span>
+              <div className="create-user-form__input-shell">
+                <input
+                  className="create-user-form__input"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                  placeholder="user@example.com"
+                  autoComplete="off"
+                  required
+                />
+              </div>
             </label>
 
-            <label className="form-field">
-              <span>Password</span>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-                placeholder="At least 8 characters"
-                autoComplete="new-password"
-                minLength={8}
-                required
-              />
+            <label className="create-user-form__field">
+              <span className="create-user-form__label">Password</span>
+              <div className="create-user-form__input-shell">
+                <input
+                  className="create-user-form__input"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                  placeholder="At least 8 characters"
+                  autoComplete="new-password"
+                  minLength={8}
+                  required
+                />
+              </div>
             </label>
 
-            <label className="form-field">
-              <span>Role</span>
-              <select
-                value={form.roleCode}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    roleCode: e.target.value as UserRole
-                  }))
-                }
-              >
-                <option value="CANDIDATE">Candidate</option>
-                <option value="RECRUITER">Recruiter</option>
-                <option value="ADMIN">Administrator</option>
-              </select>
+            <label className="create-user-form__field">
+              <span className="create-user-form__label">Role</span>
+              <div className="create-user-form__select-shell">
+                <select
+                  className="create-user-form__select"
+                  value={form.roleCode}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      roleCode: e.target.value as UserRole
+                    }))
+                  }
+                >
+                  <option value="CANDIDATE">Candidate</option>
+                  <option value="RECRUITER">Recruiter</option>
+                  <option value="ADMIN">Administrator</option>
+                </select>
+                <span className="create-user-form__select-icon">▾</span>
+              </div>
             </label>
           </div>
 
-          <div className="inline-actions">
-            <button type="submit" className="btn-primary" disabled={createUserMutation.isPending}>
+          <div className="inline-actions create-user-form__actions">
+            <button
+              type="submit"
+              className="btn-primary create-user-form__submit"
+              disabled={createUserMutation.isPending}
+            >
               {createUserMutation.isPending ? 'Creating...' : 'Create user'}
             </button>
           </div>
 
-          {formError ? <div className="error-text">{formError}</div> : null}
-          {formSuccess ? <div className="success-text">{formSuccess}</div> : null}
+          {formError ? <div className="error-text create-user-form__feedback">{formError}</div> : null}
+          {formSuccess ? (
+            <div className="success-text create-user-form__feedback">{formSuccess}</div>
+          ) : null}
         </form>
       </section>
 

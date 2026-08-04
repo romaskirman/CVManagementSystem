@@ -10,6 +10,20 @@ type CvIdParams = {
 export class LikesController {
   constructor(private readonly likesService: LikesService) {}
 
+  getCvLikeState = async (
+    req: Request<CvIdParams>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const currentUser = req.user as RequestUser;
+      const result = await this.likesService.getCvLikeState(req.params.cvId, currentUser);
+      res.status(StatusCodes.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   likeCv = async (
     req: Request<CvIdParams>,
     res: Response,
