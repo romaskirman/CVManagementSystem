@@ -5,12 +5,15 @@ import { attributesApi } from '../../shared/api/attributes.api';
 import { AddProfileAttributePanel } from '../../features/profile/components/AddProfileAttributePanel';
 import { ProfileAttributeValueEditor } from '../../features/profile/components/ProfileAttributeValueEditor';
 import { ProfileCvsSection } from '../../features/profile/components/ProfileCvsSection';
+import { SalesforceExportModal } from '../../features/profile/components/SalesforceExportModal';
+import { salesforceApi } from '../../shared/api/salesforce.api';
 import { useProfileAutosave } from '../../features/profile/hooks/useProfileAutosave';
 import {
   LibraryAttribute,
   ProfileDetails,
   ProfileSavePayload
 } from '../../features/profile/types';
+import { useAuth } from '../../app/providers/AuthProvider';
 import * as React from 'react';
 
 const BUILT_IN_NAMES = {
@@ -80,9 +83,12 @@ function adaptProfile(apiProfile: any): ProfileDetails {
 
 export function MyProfilePage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [profileState, setProfileState] = useState<ProfileDetails | null>(null);
   const [hasConflict, setHasConflict] = useState(false);
   const [editingBuiltIn, setEditingBuiltIn] = useState<BuiltInFieldKey | null>(null);
+  const [isSalesforceOpen, setIsSalesforceOpen] = useState(false);
+  const [salesforceStatus, setSalesforceStatus] = useState<string | null>(null);
 
   const {
     data: profile,
@@ -251,6 +257,18 @@ export function MyProfilePage() {
     await queryClient.invalidateQueries({ queryKey: ['my-profile'] });
   };
 
+  const handleSalesforceSubmit = async (form: {
+    company: string;
+    phone?: string | null;
+    notes?: string | null;
+  }) => {
+    const result = await salesforceApi.exportCurrentUser(form);
+    setSalesforceStatus(
+      `Salesforce created: Account ${result.salesforceAccountId}, Contact ${result.salesforceContactId}`
+    );
+    setIsSalesforceOpen(false);
+  };
+
   if (isLoading) {
     return <div className="page-section">Loading profile...</div>;
   }
@@ -327,10 +345,25 @@ export function MyProfilePage() {
         <p>Auto-save is enabled and runs every few seconds.</p>
       </div>
 
-      <div className="inline-actions profile-status-row">
+      <div className="inline-actions profile-status-row salesforce-profile-align-items">
         <span>{isSaving ? 'Saving...' : isDirty ? 'Unsaved changes' : 'Saved'}</span>
         {lastSavedAt && <span>Last saved: {new Date(lastSavedAt).toLocaleTimeString()}</span>}
+        <button type="button" className="btn-secondary" onClick={() => setIsSalesforceOpen(true)}>
+          Create Salesforce record
+        </button>
       </div>
+
+      {salesforceStatus && (
+        <div
+          className={
+            salesforceStatus.toLowerCase().includes('created')
+              ? 'success-banner'
+              : 'conflict-banner'
+          }
+        >
+          {salesforceStatus}
+        </div>
+      )}
 
       {hasConflict && (
         <div className="conflict-banner">
@@ -375,6 +408,13 @@ export function MyProfilePage() {
       />
 
       <ProfileCvsSection items={profileState.cvs ?? []} />
+
+      <SalesforceExportModal
+        isOpen={isSalesforceOpen}
+        onClose={() => setIsSalesforceOpen(false)}
+        onSubmit={handleSalesforceSubmit}
+        userEmail={user?.email ?? ''}
+      />
     </section>
   );
 }

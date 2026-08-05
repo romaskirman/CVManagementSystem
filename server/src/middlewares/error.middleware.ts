@@ -7,6 +7,18 @@ type RequestWithId = Request & {
   requestId?: string;
 };
 
+function serializeError(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    };
+  }
+
+  return error;
+}
+
 export function errorMiddleware(
   error: unknown,
   req: Request,
@@ -34,11 +46,13 @@ export function errorMiddleware(
     return;
   }
 
+  const serializedError = serializeError(error);
+
   logger.error({
     requestId: request.requestId,
     message: 'Unhandled error',
     path: request.originalUrl,
-    error
+    error: serializedError
   });
 
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

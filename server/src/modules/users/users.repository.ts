@@ -48,6 +48,19 @@ export class UsersRepository {
     });
   }
 
+  async findCandidateProfileByUserId(userId: string) {
+    return prisma.candidateProfile.findUnique({
+      where: { userId },
+      include: {
+        attributeValues: {
+          include: {
+            attribute: true
+          }
+        }
+      }
+    });
+  }
+
   async findRolesByCodes(roleCodes: RoleCode[]) {
     return prisma.role.findMany({
       where: {
@@ -85,6 +98,23 @@ export class UsersRepository {
         }
       }
     });
+  }
+
+  async updateSalesforceSync(
+    userId: string,
+    data: { salesforceAccountId: string; salesforceContactId: string }
+  ) {
+    await prisma.$executeRaw`
+      UPDATE "User"
+      SET
+        "salesforceAccountId" = ${data.salesforceAccountId},
+        "salesforceContactId" = ${data.salesforceContactId},
+        "salesforceSyncedAt" = NOW(),
+        "updatedAt" = NOW()
+      WHERE "id" = ${userId}
+    `;
+
+    return this.findUserById(userId);
   }
 
   async deleteUser(userId: string) {

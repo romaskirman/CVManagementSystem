@@ -12,6 +12,7 @@ import { likesRouter } from './likes.routes';
 import { statsRouter } from './stats.routes';
 import { searchRouter } from './search.routes';
 import { adminRouter } from './admin.routes';
+import { salesforceRouter } from '../modules/integrations/salesforce/salesforce.routes';
 
 export const apiRouter = Router();
 
@@ -36,3 +37,4 @@ apiRouter.use('/likes', likesRouter);
 apiRouter.use('/stats', statsRouter);
 apiRouter.use('/search', searchRouter);
 apiRouter.use('/admin', adminRouter);
+apiRouter.use('/integrations/salesforce', salesforceRouter);
